@@ -41,9 +41,7 @@ class KafkaClickEventConsumer:
             return file.read().split(';')
 
     def create_tables(self):
-        print(self.sql_create_queries)
         for query in self.sql_create_queries:
-            print("query:",query)
             self.pg_cursor.execute(query)
         self.pg_conn.commit()
 
