@@ -18,6 +18,7 @@ TOPICS = {
 }
 
 class KafkaClickEventProducer:
+    #Initial setup for the producer
     def __init__(self, bootstrap_servers, topics):
         self.producer = KafkaProducer(
             bootstrap_servers=bootstrap_servers,
@@ -27,6 +28,7 @@ class KafkaClickEventProducer:
         self.topics = topics
         self.click_event_generator = click_event_generator.ClickEventGenerator()
 
+#Based on the choosen event, generate sysnthetic data for it
     def send_event(self, event_type):
         try:
             if event_type == 'search':
@@ -50,15 +52,16 @@ class KafkaClickEventProducer:
         self.producer.close()
 
 def main():
+    #Initiate the kafka producer with the needed topics
     producer = KafkaClickEventProducer(BOOTSTRAP_SERVERS, TOPICS)
     start_time = datetime.now()
     end_time = start_time + timedelta(minutes=5)
     
     try:
-        while datetime.now() < end_time:
-            event_type = random.choice(list(TOPICS.keys()))
+        while datetime.now() < end_time: #Limit the processing of stream data to 5 minutes (demonstration)
+            event_type = random.choice(list(TOPICS.keys())) #Choose a random event to simulate user behaviour
             producer.send_event(event_type)
-            time.sleep(random.uniform(1, 2))
+            time.sleep(random.uniform(1, 2)) #Simulate random intervals between each event
     finally:
         producer.close()
 
