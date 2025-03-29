@@ -46,10 +46,12 @@ class KafkaClickEventConsumer:
         self.pg_conn.commit()
 
     def process_event(self, event, topic):
+        #Find corresponding table to save data from each topic
         table_name = topic.replace('_events', '_table')
         query_index = {'search_table': 0, 'filter_table': 1, 'details_table': 2, 'faq_table': 3}
         insert_query = self.sql_insert_queries[query_index[table_name]]
         
+        #Insert data in the corresonding table
         self.pg_cursor.execute(sql.SQL(insert_query).format(sql.Identifier(table_name)), (
             event['User_ID'],
             parser.parse(event['Timestamp']),
@@ -62,12 +64,12 @@ class KafkaClickEventConsumer:
         self.pg_conn.commit()
 
     def consume_events(self, duration_minutes):
-        self.create_tables()
+        self.create_tables() #Create tables in POSTGRES to store stream data
         start_time = datetime.now()
         end_time = start_time + timedelta(minutes=duration_minutes)
 
         try:
-            for message in self.consumer:
+            for message in self.consumer: #For each incoming message in each topic
                 if datetime.now() >= end_time:
                     break
                 topic = message.topic
@@ -82,6 +84,7 @@ class KafkaClickEventConsumer:
         self.pg_conn.close()
 
 def main():
+    #Initiate the consumer and limit processing to 5 minutes (demonstration)
     consumer = KafkaClickEventConsumer(BOOTSTRAP_SERVERS, TOPICS, PG_CONFIG)
     consumer.consume_events(duration_minutes=5)
 
