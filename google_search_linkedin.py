@@ -5,23 +5,16 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
 import pandas as pd
-import argparse
 import urllib.parse
 import random
 import time
 import re
 
-def parse_arguments():
-    parser = argparse.ArgumentParser(description='Scrape LinkedIn Profiles from Google Search')
-    parser.add_argument('--keyword', type=str, required=True, help='Search keywords for LinkedIn profiles')
-    parser.add_argument('--pages', type=int, default=5, help='Number of Google pages to scrape')
-    parser.add_argument('--output', type=str, default='data/linkedin_profiles.csv', help='Output CSV filename')
-    return parser.parse_args()
 
 class LinkedInScraper:
-    def __init__(self, keyword: str, pages: int):
+    def __init__(self, keyword: str):
         self.keyword = urllib.parse.quote_plus(keyword)
-        self.pages = pages
+        self.pages = 5
         self.results = []
         self.driver = self._init_driver()
         self.seen_urls = set()
@@ -37,7 +30,6 @@ class LinkedInScraper:
         options.add_argument(f"user-agent={random.choice(user_agents)}")
         options.add_argument("--disable-blink-features=AutomationControlled")
 
-        
         service = Service(executable_path="D:/Downloads/chromedriver-win64/chromedriver-win64/chromedriver.exe")
         return webdriver.Chrome(service=service, options=options)
 
@@ -45,7 +37,7 @@ class LinkedInScraper:
         time.sleep(random.uniform(1.5, 4.5))
 
     def search(self):
-        base_url = f"https://www.google.com/search?num=100q=site%3Alinkedin.com/in%20{self.keyword}"
+        base_url = f"https://www.google.com/search?q=site%3Alinkedin.com/in%20{self.keyword}"
         
         for page in range(self.pages):
             try:
@@ -69,7 +61,6 @@ class LinkedInScraper:
     def _parse_page(self):
         soup = BeautifulSoup(self.driver.page_source, 'html.parser')
         
-        # Improved selector for LinkedIn profiles
         for result in soup.select('div.g'):
             link_element = result.select_one('a[href*="linkedin.com/in/"]')
             if not link_element:
@@ -99,19 +90,15 @@ class LinkedInScraper:
             text = re.sub(pattern, '', text, flags=re.IGNORECASE)
         return text.strip()
 
-    def save_results(self,args):
+    def save_results(self):
         df = pd.DataFrame(self.results)
         df.drop_duplicates(subset=['url'], inplace=True)
-        df.to_csv(args.output, index=False, encoding='utf-8')
+        df.to_csv('data/linkedin_profiles.csv', index=False, encoding='utf-8')
 
 def main():
-    args = parse_arguments()
-    scraper = LinkedInScraper(keyword=args.keyword, pages=args.pages)
+    scraper = LinkedInScraper('BDMA')
     scraper.search()
-    scraper.save_results(args)
-    
-    print(f"Scraped {len(scraper.results)} unique LinkedIn profiles")
-    print(f"Results saved to {args.output}")
+    scraper.save_results()
 
 if __name__ == "__main__":
     main()

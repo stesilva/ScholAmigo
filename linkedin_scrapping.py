@@ -17,7 +17,7 @@ class LinkedInScraper:
     def __init__(self):
         self.driver = webdriver.Chrome()
         self.profile_data = {}
-        self.base_url = ""  # Will be set in scrape_profile
+        self.base_url = ""
 
     def scrape_profile(self, url):
         self.base_url = url
@@ -419,7 +419,7 @@ def scrape_linkedin_profiles(scraper, csv_file_path, output_json_path):
 
                 try:
                     profile_data = scraper.scrape_profile(profile_url)
-                    if profile_data:  # Check if data was successfully scraped
+                    if profile_data:
                         all_profile_data.append(profile_data)
                         print(f"Successfully scraped data for: {profile_title}")
                     else:
@@ -427,7 +427,6 @@ def scrape_linkedin_profiles(scraper, csv_file_path, output_json_path):
 
                 except Exception as e:
                     print(f"Error scraping {profile_title} - {profile_url}: {e}")
-                    # You might want to log the error to a file for later inspection
 
     except FileNotFoundError:
         print(f"Error: CSV file not found at {csv_file_path}")
@@ -436,9 +435,8 @@ def scrape_linkedin_profiles(scraper, csv_file_path, output_json_path):
         print(f"An error occurred while reading the CSV: {e}")
         return
 
-    # Save all scraped data to the JSON file
     try:
-        scraper.save_data(output_json_path, all_profile_data)  # Modified to pass the data
+        scraper.save_data(output_json_path, all_profile_data)
         print(f"Scraped data saved to {output_json_path}")
     except Exception as e:
         print(f"Error saving data to JSON: {e}")        
