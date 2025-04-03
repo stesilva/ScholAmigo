@@ -5,12 +5,6 @@ import pandas as pd
 BASE_URL = "https://www.eacea.ec.europa.eu/scholarships/erasmus-mundus-catalogue_en?page="
 
 def get_scholarships(page_count: int = 11) -> pd.DataFrame:
-    """
-    Fetch scholarship entries (title + link) from the Erasmus Mundus Catalogue pages.
-    
-    :param page_count: number of pages to scrape (default=11).
-    :return: DataFrame with columns ['title', 'link'].
-    """
     all_scholarships = []
     
     for page_num in range(page_count):

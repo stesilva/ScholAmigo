@@ -16,11 +16,12 @@ def run_pipeline():
     cleaned_df = clean_subpages(subpages_df)
     #filter to a “reasonable” range of subpage counts (5–15)
     filtered_df = filter_by_subpage_count(cleaned_df, min_count=5, max_count=15)
+    print(f"Total number of scholarships to be parsed: {len(filtered_df)}")
     #parse each subpage
     structured_data = parse_all_subpages(filtered_df)
     #save to json
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    filename  = f"{timestamp}_structured_data.json"
+    timestamp = datetime.now().strftime("%Y-%m")
+    filename  = f"{timestamp}_erasmus_scholarship_data.json"
 
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(structured_data, f, ensure_ascii=False, indent=2)
