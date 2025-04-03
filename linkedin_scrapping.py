@@ -1,7 +1,6 @@
 import warnings
 import os
 import json
-import csv
 from bs4 import BeautifulSoup
 from httpcore import TimeoutException
 from selenium import webdriver
@@ -9,6 +8,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from dotenv import load_dotenv
+import boto3
+from datetime import datetime
+import re
 
 warnings.filterwarnings("ignore")
 load_dotenv()
@@ -398,54 +400,87 @@ class LinkedInScraper:
             return input
         
         
-    def save_data(self, filename, all_profile_data):
-        with open(filename, 'w') as f:
-            json.dump(self.decode_unicode_escape(all_profile_data), f, indent=4, ensure_ascii=False)    
+    def save_data(self, bucket_name, all_profile_data, folder_name):
+        s3 = boto3.client('s3')
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
+        s3_file_name = f"{folder_name}{timestamp}_linkedin_profile_data.json"
+        json_data = json.dumps(all_profile_data, ensure_ascii=False, indent=4)
+        
+        s3.put_object(
+            Bucket=bucket_name,
+            Key=s3_file_name,
+            Body=json_data,
+            ContentType='application/json'
+        )
 
     def close(self):
         self.driver.quit()        
-        
 
-def scrape_linkedin_profiles(scraper, csv_file_path, output_json_path):
+
+def retrive_linkedin_urls_s3(s3,bucket_name,folder_name):
+    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name) 
+    
+    if 'Contents' not in response:
+        return None
+    
+    latest_file = max(response['Contents'], key=lambda obj: obj['LastModified'])
+    latest_file_key = latest_file['Key']
+    
+    file_response = s3.get_object(Bucket=bucket_name, Key=latest_file_key)
+    content = file_response['Body'].read().decode('utf-8')
+    
+    return content
+
+def scrape_linkedin_profiles(scraper, linkedin_urls, bucket_name, folder_name):
     all_profile_data = [] 
 
+    lines = linkedin_urls.strip().split("\n")
+    lines = [line.replace('\r', '') for line in lines]
+    headers = lines[0].split(",")
+    rows = [dict(zip(headers, line.split(","))) for line in lines[1:]]
+
     try:
-        with open(csv_file_path, 'r', encoding='utf-8') as csvfile:
-            reader = csv.DictReader(csvfile)
-            for row in reader:
-                profile_url = row['url']
-                profile_title = row['title'] 
-                print(f"Scraping profile: {profile_title} - {profile_url}")
+        for row in rows:
+            profile_title = row['name']
+            profile_url = row['url']
+            print(f"Scraping profile: {profile_title} - {profile_url}")
 
-                try:
-                    profile_data = scraper.scrape_profile(profile_url)
-                    if profile_data:
-                        all_profile_data.append(profile_data)
-                        print(f"Successfully scraped data for: {profile_title}")
-                    else:
-                        print(f"Warning: No data scraped for {profile_title} - {profile_url}")
+            try:
+                profile_data = scraper.scrape_profile(profile_url)
+                if profile_data:
+                    all_profile_data.append(profile_data)
+                    print(f"Successfully scraped data for: {profile_title}")
+                else:
+                    print(f"Warning: No data scraped for {profile_title} - {profile_url}")
 
-                except Exception as e:
-                    print(f"Error scraping {profile_title} - {profile_url}: {e}")
+            except Exception as e:
+                print(f"Error scraping {profile_title} - {profile_url}: {e}")
 
     except FileNotFoundError:
-        print(f"Error: CSV file not found at {csv_file_path}")
+        print(f"Error: No file found at {bucket_name}")
         return
     except Exception as e:
-        print(f"An error occurred while reading the CSV: {e}")
+        print(f"An error occurred while reading the data: {e}")
         return
 
     try:
-        scraper.save_data(output_json_path, all_profile_data)
-        print(f"Scraped data saved to {output_json_path}")
+        scraper.save_data(bucket_name,all_profile_data, folder_name)
+        print(f"Scraped data saved to {bucket_name} - {folder_name}")
     except Exception as e:
-        print(f"Error saving data to JSON: {e}")        
+        print(f"Error saving data to S3: {e}")        
 
 
 def main():
+    s3 = boto3.client('s3')
+    bucket_name = 'bronze-bucket-bdm'
+    input_folder_name = 'application_data/'
+    output_folder_name = 'linkedin_users_data/'
+    linkedin_urls = retrive_linkedin_urls_s3(s3,bucket_name,input_folder_name)
+
     scraper = LinkedInScraper()
+
     scraper.login()
-    scrape_linkedin_profiles(scraper,'data/normalized_linkedin_data.csv','data/profile_data.json')
+    scrape_linkedin_profiles(scraper,linkedin_urls,bucket_name,output_folder_name)
     scraper.close()
 
 if __name__ == "__main__":
