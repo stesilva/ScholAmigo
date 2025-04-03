@@ -1,6 +1,6 @@
 import pandas as pd
 
-def clean_subpages(subpages_df: pd.DataFrame) -> pd.DataFrame:
+def clean_subpages(subpages_df: pd.DataFrame):
     exploded = subpages_df.explode("subpages").reset_index(drop=True)
     filtered = exploded[~exploded["subpages"].str.contains(r"/#", na=False)].copy()
     subpage_counts = (
@@ -19,6 +19,6 @@ def clean_subpages(subpages_df: pd.DataFrame) -> pd.DataFrame:
     return filtered
 
 
-def filter_by_subpage_count(df: pd.DataFrame, min_count: int = 5, max_count: int = 15) -> pd.DataFrame:
-    mask = (df["num_subpages"] >= min_count) & (df["num_subpages"] <= max_count)
-    return df[mask].reset_index(drop=True)
+#def filter_by_subpage_count(df: pd.DataFrame, min_count: int = 5, max_count: int = 15):
+#    mask = (df["num_subpages"] >= min_count) & (df["num_subpages"] <= max_count)
+#    return df[mask].reset_index(drop=True)
