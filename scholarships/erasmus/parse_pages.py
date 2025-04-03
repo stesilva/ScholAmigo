@@ -4,12 +4,12 @@ import pandas as pd
 
 RELEVANT_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "p"]
 
-def parse_page_structured(project: str, main_link: str, subpage_url: str) -> list:
+def parse_page_structured(project: str, main_link: str, subpage_url: str):
     try:
         response = requests.get(subpage_url, timeout=10)
         response.raise_for_status()
     except Exception as e:
-        print(f"[ParsePages] Error fetching {subpage_url}: {e}")
+        #print(f"[ParsePages] Error fetching {subpage_url}: {e}")
         return []
     
     soup = BeautifulSoup(response.text, "html.parser")
@@ -27,7 +27,7 @@ def parse_page_structured(project: str, main_link: str, subpage_url: str) -> lis
             })
     return data_blocks
 
-def parse_all_subpages(df: pd.DataFrame) -> list:
+def parse_all_subpages(df: pd.DataFrame):
     all_structured = []
     for _, row in df.iterrows():
         project     = row["program"]
