@@ -22,7 +22,7 @@ docker-compose --version
 
 ```bash
 git clone https://github.com/stesilva/ScholAmigo
-cd <repository-folder>;
+cd <repository-folder>
 ```
 
 
@@ -47,7 +47,7 @@ For Linux-based OS run the following command to create directories for Airflow:
 
 ```bash
 mkdir -p ./dags ./logs ./plugins
-echo -e "AIRFLOW_UID=$(id -u)" &gt; .env
+echo -e "AIRFLOW_UID=$(id -u)" > .env
 ```
 For other operating systems, you may get a warning that AIRFLOW_UID is not set, but you can safely ignore it. You can also manually create an .env file in the same folder as docker-compose.yaml with this content to get rid of the warning:
 
@@ -116,7 +116,7 @@ google-chrome --version
 /usr/bin/chromedriver --version
 ```
 
-2. Ensure sufficient system resources are allocated to Docker (Airflow recommends allocating 10GB of RAM for Docker [https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#fetching-docker-compose-yaml](in this link)).
+2. Ensure sufficient system resources are allocated to Docker (Airflow recommends allocating 10GB of RAM for Docker, according to instructions provided in this [https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#fetching-docker-compose-yaml](link)).
 
 ---
 
