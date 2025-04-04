@@ -1,0 +1,3 @@
+[profile bdm_group_member]
+region = eu-north-1
+output = json
