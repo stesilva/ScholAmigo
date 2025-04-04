@@ -1,0 +1,8 @@
+FROM python:3.9.21
+
+RUN pip install python-dateutil psycopg2 kafka-python-ng
+
+WORKDIR /app
+COPY kafka_consumer.py .
+
+ENTRYPOINT [ "python", "kafka_consumer.py" ]
