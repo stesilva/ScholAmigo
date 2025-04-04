@@ -99,6 +99,7 @@ docker-compose up
 - Use the following credentials to log in:
     - **Username**: airflow
     - **Password**: airflow
+- Manually trigger the DAGs for demonstration
 
 
 #### **Step 5: Access Kafka Messages**
