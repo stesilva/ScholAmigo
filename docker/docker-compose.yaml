@@ -66,15 +66,15 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-    AWS_CONFIG_FILE: /Users/elnararb/.aws/config
-    AWS_SHARED_CREDENTIALS_FILE: /Users/elnararb/.aws/credentials
+    AWS_CONFIG_FILE: /root/.aws/config
+    AWS_SHARED_CREDENTIALS_FILE: /root/.aws/config 
     
 
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-    - ~/.aws:/Users/elnararb/.aws:ro
+    - ./aws:/root/.aws:ro
 
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
