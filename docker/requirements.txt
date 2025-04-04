@@ -1,0 +1,18 @@
+apache-airflow-providers-amazon>=8.0.0  # For AWS integrations (S3, EMR, etc.)
+# apache-airflow-providers-kafka==4.4.0
+boto3>=1.28.0  # AWS SDK
+botocore>=1.31.0
+webdriver-manager
+confluent-kafka
+kafka-python-ng
+# six==1.17.0
+# kafka-python==2.0.2
+selenium
+faker
+requests==2.32.3
+beautifulsoup4==4.13.3
+pandas==2.2.3
+pytz
+httpcore
+dotenv
+gevent
