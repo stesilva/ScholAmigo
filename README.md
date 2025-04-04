@@ -110,14 +110,7 @@ To visually see messages produced by Kafka producers, open [http://localhost:902
 
 ### **Troubleshooting**
 
-1. If you encounter issues with ChromeDriver, verify its installation:
-
-```bash
-google-chrome --version
-/usr/bin/chromedriver --version
-```
-
-2. Ensure sufficient system resources are allocated to Docker (Airflow recommends allocating 10GB of RAM for Docker, according to instructions provided in this [https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#fetching-docker-compose-yaml](link)).
+Ensure sufficient system resources are allocated to Docker (Airflow recommends allocating 10GB of RAM for Docker, according to instructions provided in this [https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#fetching-docker-compose-yaml](link)).
 
 ---
 
