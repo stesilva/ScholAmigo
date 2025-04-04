@@ -110,7 +110,7 @@ To visually see messages produced by Kafka producers, open [http://localhost:902
 
 ### **Troubleshooting**
 
-Ensure sufficient system resources are allocated to Docker (Airflow recommends allocating 10GB of RAM for Docker, according to instructions provided in this link: [https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#fetching-docker-compose-yaml]).
+Ensure sufficient system resources are allocated to Docker (Airflow recommends allocating 10GB of RAM for Docker, according to instructions provided in this link: [https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#fetching-docker-compose-yaml](https://airflow.apache.org...)).
 
 ---
 
