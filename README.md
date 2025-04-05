@@ -112,10 +112,8 @@ Ensure sufficient system resources are allocated to Docker (Airflow recommends a
 
 ---
 
-
-
 ### Example Output
-In the folder 'outputs' we present the generate files from running the pipeline. These files shows how the data is structured after being extracted from the data sources. Furthermore, these files are also stores in the Amazon S3 buckets created for this project.
+In the folder 'outputs' we present the generated files from running the pipeline. These files show how the data is structured after being extracted from the data sources. Furthermore, these files are also stored in the Amazon S3 buckets created for this project.
 
 ---
 
