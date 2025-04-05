@@ -1,5 +1,5 @@
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from faker import Faker
 import pytz
 
@@ -15,7 +15,7 @@ class ClickEventGenerator:
         self.filter_parameters = [
             'Filter: {{Deadline: {}, Desired Country: {}, Country Origin: {}, Achieved Degree: {},  Desired Degree: {}, Field of Study: {}, Type: {}}}'
         ]
-        self.base_timestamp = datetime(2025, 3, 8, 16, 42, 15, tzinfo=pytz.timezone('CET'))
+        #self.base_timestamp = datetime(2025, 3, 8, 16, 42, 15, tzinfo=pytz.timezone('CET'))
 
     def _generate_synthetic_data(self):
         return {
@@ -29,7 +29,10 @@ class ClickEventGenerator:
     def _generate_base_event(self, page):
         user_id = random.choice(self.user_ids)
         session_id = f"{random.randint(1, 1000)}"
-        timestamp = self.base_timestamp + timedelta(seconds=random.randint(0, 86400))
+        #timestamp = self.base_timestamp + timedelta(seconds=random.randint(0, 86400))
+        now = datetime.now()
+        random_seconds_ago = random.randint(0, 3600)
+        timestamp = now - timedelta(seconds=random_seconds_ago)
         
         return {
             "Timestamp": timestamp.strftime("%Y-%m-%d %H:%M:%S %Z"),
