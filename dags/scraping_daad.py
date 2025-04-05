@@ -108,14 +108,14 @@ def extract_data_from_page():
     try:
         application_requirements = driver.find_element(By.CSS_SELECTOR, "#voraussetzungen")
         
-        # Example: Extract the deadline
+        # Example: Extract the requirements
         data["Application Requirements"] = application_requirements.get_attribute("innerText")
     except NoSuchElementException:
         data["Application Requirements"] = "N/A"
 
     try:
         application_procedure = driver.find_element(By.CSS_SELECTOR, "#prozess")
-        # Example: Extract the deadline
+        # Example: Extract the procedure
         data["Application Procedure"] = application_procedure.get_attribute("innerText")
     except TimeoutException:
         print(f"Timeout while processing {link}. Skipping...")
@@ -127,7 +127,7 @@ def extract_data_from_page():
     try:
         application_instructions = driver.find_element(By.CSS_SELECTOR, "#bewerbung")
         
-        # Example: Extract the deadline
+        # Example: Extract the instructions
         data["Application Instructions"] = application_instructions.get_attribute("innerText")
     except TimeoutException:
         print(f"Timeout while processing {link}. Skipping...")
@@ -139,7 +139,7 @@ def extract_data_from_page():
     try:
         contact = driver.find_element(By.CSS_SELECTOR, "#kontaktberatung")
 
-        # Example: Extract the deadline
+        # Example: Extract the contact information
         data["Contact Information"] = contact.get_attribute("innerText")
     except TimeoutException:
         print(f"Timeout while processing {link}. Skipping...")
