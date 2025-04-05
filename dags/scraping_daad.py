@@ -35,7 +35,7 @@ def save_data_to_json(data, filename="/german_scholarships_data.json"):
 
 def extract_origin_numbers():
     """
-    Extracts origin numbers from the dropdown on the given URL.
+    Extracts all possible country of origin options (origin numbers) from the dropdown on the given URL.
 
     Args:
         url (str): The URL of the webpage containing the dropdown.
@@ -75,6 +75,9 @@ def extract_origin_numbers():
         print("Something went wrong:", e)
 
 def extract_results():
+    """
+    Extracts search results
+    """
     results = driver.find_elements(By.CSS_SELECTOR, "div.stipdb-results ul.resultlist li.entry.clearfix h2 a")
 
     for index, result in enumerate(results):
@@ -84,14 +87,19 @@ def extract_results():
     return len(results)
 
 def extract_result_links():
+    """
+    Extracts links of each search result
+    """
     result_links = []
     results = driver.find_elements(By.CSS_SELECTOR, "div.stipdb-results ul.resultlist li.entry.clearfix h2 a")
     for result in results:
         result_links.append(result.get_attribute("href"))
     return result_links
 
-# Function to extract data from a result page
 def extract_data_from_page():
+    """
+    Extracts data from each result link
+    """
     data = {}
     try:
         # Example: Extract the title
