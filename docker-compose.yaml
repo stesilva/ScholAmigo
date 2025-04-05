@@ -67,7 +67,7 @@ x-airflow-common:
     AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AWS_CONFIG_FILE: /root/.aws/config
-    AWS_SHARED_CREDENTIALS_FILE: /root/.aws/config 
+    AWS_SHARED_CREDENTIALS_FILE: /root/.aws/credentials 
     
 
   volumes:
