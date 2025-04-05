@@ -22,7 +22,7 @@ def pg_dump_backup_dag():
     @task
     def run_pg_dump_task():
         """Calls the python script that uses local pg_dump over the network."""
-        script_path = "/opt/airflow/dags/pg_dump_to_s3.py"
+        script_path = "/opt/airflow/dags/send_pg_dump_to_aws.py"
         if not os.path.exists(script_path):
             raise FileNotFoundError(f"Backup script missing: {script_path}")
         

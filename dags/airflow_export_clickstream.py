@@ -21,7 +21,7 @@ DEFAULT_ARGS = {
 def export_clickstream_dag():
     @task
     def run_export_script():
-        script_path = "/opt/airflow/dags/export_clickstream_to_s3.py"
+        script_path = "/opt/airflow/dags/send_clickstream_to_aws.py"
         subprocess.check_call(["python", script_path])
 
     @task
