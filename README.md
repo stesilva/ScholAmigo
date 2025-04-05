@@ -22,7 +22,7 @@ docker-compose --version
 
 ```bash
 git clone https://github.com/stesilva/ScholAmigo
-cd <ScholAmigo>
+cd ScholAmigo
 ```
 
 
