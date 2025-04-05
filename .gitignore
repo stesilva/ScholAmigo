@@ -174,3 +174,4 @@ cython_debug/
 .pypirc
 scholarships/.DS_Store
 .DS_Store
+logs/scheduler/latest

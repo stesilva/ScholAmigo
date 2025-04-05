@@ -1,8 +1,6 @@
 from airflow.decorators import dag, task
 from datetime import datetime, timedelta
-import subprocess
-import logging
-import os
+import subprocess, logging, os
 
 DEFAULT_ARGS = {
     "owner": "airflow",
@@ -21,29 +19,26 @@ DEFAULT_ARGS = {
 )
 def pg_dump_backup_dag():
     
-    @task(task_id="run_pg_dump")
-    def run_pg_dump():
+    @task
+    def run_pg_dump_task():
+        """Calls the python script that uses local pg_dump over the network."""
         script_path = "/opt/airflow/dags/pg_dump_to_s3.py"
-        
         if not os.path.exists(script_path):
-            raise FileNotFoundError(f"Script not found: {script_path}")
-            
-        logging.info(f"Running pg_dump script at {script_path}")
+            raise FileNotFoundError(f"Backup script missing: {script_path}")
         
-        try:
-            result = subprocess.run(
-                ["python", script_path],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            logging.info(f"Script output: {result.stdout}")
-            return "Backup completed successfully"
-        except subprocess.CalledProcessError as e:
-            logging.error(f"Script failed with exit code {e.returncode}")
-            logging.error(f"Error output: {e.stderr}")
-            raise
-    
-    run_pg_dump()
+        logging.info(f"Executing backup script: {script_path}")
+        result = subprocess.run(
+            ["python", script_path],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode != 0:
+            logging.error(f"Backup failed with code {result.returncode}")
+            logging.error(f"Stderr: {result.stderr}")
+            raise RuntimeError("pg_dump_to_s3 script failed.")
+        
+        logging.info(f"Backup script output:\n{result.stdout}")
+
+    run_pg_dump_task()
 
 dag = pg_dump_backup_dag()

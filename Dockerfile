@@ -20,6 +20,7 @@ RUN apt-get update && \
         libasound2 \
         libdrm2 \
         librdkafka-dev \
+        postgresql-client \
         wget \
         unzip && \
     apt-get clean && \
