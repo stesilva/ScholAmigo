@@ -8,7 +8,7 @@ from datetime import timedelta
 
 @dag('batch_linkedin', start_date=datetime(2025, 3 , 29),
         description='DAG to scrape user data', tags=['batch_processing'],
-        schedule='@daily', catchup=False)
+        schedule='0 1 * * *', catchup=False)
 def my_dag():
 
     @task
