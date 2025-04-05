@@ -481,7 +481,7 @@ def scrape_linkedin():
 
     session = boto3.Session(profile_name="bdm_group_member")
     s3 = session.client("s3")
-    bucket_name = 'linkedin_data'
+    bucket_name = 'linkedin-data-bdm'
     input_folder_name = 'application_data/'
     output_folder_name = 'linkedin_users_data/'
     linkedin_urls = retrive_linkedin_urls_s3(s3,bucket_name,input_folder_name)
