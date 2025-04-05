@@ -1,7 +1,7 @@
 import json
 import boto3
 
-def send_data_to_aws(data, bucket_name, folder_name, file_name):
+def send_data_to_aws(data, bucket_name, file_name):
 
     # Convert JSON data to a string
     json_data = json.dumps(data, ensure_ascii=False, indent=4)
@@ -14,7 +14,7 @@ def send_data_to_aws(data, bucket_name, folder_name, file_name):
     try:
         s3.put_object(
             Bucket=bucket_name,
-            Key=folder_name + file_name,
+            Key=file_name,
             Body=json_data,
             ContentType="application/json"
         )

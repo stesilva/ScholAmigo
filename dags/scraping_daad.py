@@ -265,7 +265,7 @@ def scrape_callable():
 
     # Save the data to a JSON file
     # save_data_to_json(scholarships_data)
-    send_data_to_aws(scholarships_data, "bronze-bucket-bdm", "scholarship_data/", f"{datetime.now().strftime("%Y-%m-%d_%H-%M")}_german_scholarships_data.json")
+    send_data_to_aws(scholarships_data, "scholarship_data", f"{datetime.now().strftime("%Y-%m-%d_%H-%M")}_german_scholarships_data.json")
 
     # Close the WebDriver
     driver.quit()
