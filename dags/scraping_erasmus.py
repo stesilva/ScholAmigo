@@ -1,7 +1,4 @@
-import json
 from datetime import datetime
-import pandas as pd
-
 from erasmus_scrape_catalog import get_scholarships, target_scholarships
 from erasmus_scrape_subpages import get_subpages
 from erasmus_clean_links import clean_subpages #filter_by_subpage_count
@@ -15,8 +12,6 @@ def run_pipeline():
     subpages_df = get_subpages(df_catalog, end_row=100)
     #clean out anchor links, update subpage counts
     cleaned_df = clean_subpages(subpages_df)
-    #cleaned_df = filter_by_subpage_count(cleaned_df, min_count=5, max_count=15)
-    #print(f"Total number of scholarships to be parsed: {len(cleaned_df)}")
     #parse each subpage
     structured_data = parse_all_subpages(cleaned_df)
     #save to json

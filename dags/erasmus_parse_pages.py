@@ -4,12 +4,12 @@ import pandas as pd
 
 RELEVANT_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "p"]
 
+#etracts text content from relevant HTML tag
 def parse_page_structured(project: str, main_link: str, subpage_url: str):
     try:
         response = requests.get(subpage_url, timeout=10)
         response.raise_for_status()
     except Exception as e:
-        #print(f"[ParsePages] Error fetching {subpage_url}: {e}")
         return []
     
     soup = BeautifulSoup(response.text, "html.parser")
@@ -27,6 +27,7 @@ def parse_page_structured(project: str, main_link: str, subpage_url: str):
             })
     return data_blocks
 
+#iterates through a df of subpages and aggregates parsed content
 def parse_all_subpages(df: pd.DataFrame):
     all_structured = []
     for _, row in df.iterrows():

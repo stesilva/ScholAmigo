@@ -7,6 +7,7 @@ def get_subpages(df: pd.DataFrame, end_row: int = 100):
     results = {}
     end_row = min(end_row, len(df))
     
+    #iterates through the main URLs and extracts subpage links
     for i in range(end_row):
         main_url = df.loc[i, "link"]
         title    = df.loc[i, "title"]
@@ -17,12 +18,12 @@ def get_subpages(df: pd.DataFrame, end_row: int = 100):
             resp = requests.get(main_url, timeout=10)
             resp.raise_for_status()
         except Exception as e:
-            #print(f"[ScrapeSubpages]  Request error for {main_url}: {e}")
             continue
         
         soup = BeautifulSoup(resp.text, "html.parser")
         
         menu = None
+        #searches for navigation menus (`<nav>` or `<ul>` tags) to identify subpage links
         for nav_tag in soup.find_all("nav"):
             id_attr    = nav_tag.get("id", "")
             class_attr = " ".join(nav_tag.get("class", []))
@@ -43,11 +44,11 @@ def get_subpages(df: pd.DataFrame, end_row: int = 100):
             menu_links = [urljoin(main_url, a["href"]) 
                           for a in menu.find_all("a", href=True)]
         else:
-            #print("[ScrapeSubpages]  Could not find a 'menu'—fallback to top-level link approach.")
             all_links = soup.find_all("a", href=True)
             for a in all_links:
                 candidate = urljoin(main_url, a["href"])
                 if urlparse(candidate).netloc == urlparse(main_url).netloc:
+                    #filters out duplicate, invalid, or external links
                     if candidate != main_url and "#" not in candidate:
                         menu_links.append(candidate)
         
@@ -62,10 +63,8 @@ def get_subpages(df: pd.DataFrame, end_row: int = 100):
             try:
                 r = requests.get(link_url, timeout=10)
                 if r.status_code != 200:
-                    #print(f"[ScrapeSubpages]    Failed subpage {link_url} (status {r.status_code})")
                     continue
             except Exception as e:
-                #print(f"[ScrapeSubpages]    Request error for subpage {link_url}: {e}")
                 continue
         
         results[i] = [title, main_url, len(visited), visited]
@@ -92,6 +91,7 @@ def get_subpages(df: pd.DataFrame, end_row: int = 100):
 
 
 def _prepend_main_link(row: pd.Series):
+    #ensures the main URL is included in the list of subpages if not already present
     main_link = row["main_link"].rstrip("/")
     subs      = [sp.rstrip("/") for sp in row["subpages"]]
     

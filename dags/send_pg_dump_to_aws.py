@@ -17,12 +17,13 @@ PG_USER = "kafka"
 PG_PASSWORD = "kafka_password"
 DUMP_PATH = "/tmp/pg_dump_latest.sql"
 
-# S3 config
+#S3 config
 AWS_PROFILE = "bdm_group_member"
 S3_BUCKET = "clickstream-history-bdm"
 S3_PREFIX = "full_pg_dumps/"
 RETENTION_DAYS = 3
 
+#identifies and deletes backups in S3 that exceed the retention period
 def delete_old_backups(s3, bucket, prefix, days=3):
     """Delete backups older than `days` in s3://bucket/prefix."""
     logger.info(f"Cleaning up old dumps > {days} days in s3://{bucket}/{prefix}")
@@ -30,9 +31,10 @@ def delete_old_backups(s3, bucket, prefix, days=3):
     if "Contents" not in resp:
         logger.info("No backups found.")
         return
-
+    
     now = datetime.now(timezone.utc)
     deleted = 0
+    # Loop through the objects in the bucket
     for obj in resp["Contents"]:
         key = obj["Key"]
         age_days = (now - obj["LastModified"]).days
@@ -43,6 +45,7 @@ def delete_old_backups(s3, bucket, prefix, days=3):
 
     logger.info(f"Deleted {deleted} old backups total.")
 
+#create a database dump and upload it to S3 with a timestamped key
 def pg_dump_to_s3():
     """Dump entire DB over the network, upload to S3, rotate old backups."""
     try:
@@ -73,9 +76,11 @@ def pg_dump_to_s3():
 
         logger.info("Upload successful.")
 
+        #deletes the local dump file after a successful upload
         os.remove(DUMP_PATH)
         logger.info("Local dump file removed.")
 
+        #rotates old backups in S3 by deleting files older than the specified retention period (3 days)
         delete_old_backups(s3, S3_BUCKET, S3_PREFIX, RETENTION_DAYS)
         logger.info("Backup & cleanup complete.")
 

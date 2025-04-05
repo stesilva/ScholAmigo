@@ -23,10 +23,7 @@ TABLES = ["search_table", "filter_table", "details_table", "faq_table"]
 def export_clickstream():
     """
     Export the last hour's rows from Postgres 'kafka' DB to S3 as CSVs.
-
     Also creates a subfolder for each day in S3.
-    Example final path:
-       s3://bronze-bucket-bdm/click_stream_history/2025-04-05/search_table_05-32.csv
     """
     try:
         conn = psycopg2.connect(**PG_CONFIG)
@@ -47,6 +44,7 @@ def export_clickstream():
             cursor.execute(query)
             rows = cursor.fetchall()
 
+            #writes the data to CSV files and uploads them to an S3 bucket
             colnames = [desc[0] for desc in cursor.description]
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)

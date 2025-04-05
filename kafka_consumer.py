@@ -85,7 +85,7 @@ class KafkaClickEventConsumer:
         self.pg_conn.close()
 
 def main():
-    #Initiate the consumer and limit processing to 5 minutes (demonstration)
+    #Initiate the consumer and limit processing to 10 minutes (demonstration)
     consumer = KafkaClickEventConsumer(BOOTSTRAP_SERVERS, TOPICS, PG_CONFIG)
     consumer.consume_events(duration_minutes=10)
 

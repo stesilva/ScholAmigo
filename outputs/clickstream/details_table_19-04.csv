@@ -1,0 +1,3 @@
+id,user_id,timestamp,page,clicked_element,clicked_parameter,duration,location
+57,696952377,2025-04-05 18:05:16,/details,"""Save"" button",Scholarship ID: ECFD4E1A,0.56,"-84.9068455, -122.915399"
+79,756725328,2025-04-05 18:04:57,/details,"""Save"" button",Scholarship ID: ADF59DF1,0.61,"-81.886174, 174.281581"

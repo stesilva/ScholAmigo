@@ -3,16 +3,16 @@ To reproduce the project, follow the instructions below.
 ### **Prerequisites**
 
 1. Install **Docker**:
-    - Download Docker from [https://www.docker.com/](https://www.docker.com/).
-    - Verify the installation:
+   - Download Docker from [https://www.docker.com/](https://www.docker.com/).
+   - Verify the installation:
 
 ```bash
 docker --version
 ```
 
 2. Install **Docker Compose**:
-    - Included with Docker Desktop for Mac and Windows.
-    - Verify the installation:
+   - Included with Docker Desktop for Mac and Windows.
+   - Verify the installation:
 
 ```bash
 docker-compose --version
@@ -25,7 +25,6 @@ git clone https://github.com/stesilva/ScholAmigo
 cd ScholAmigo
 ```
 
-
 ---
 
 ### **Step-by-Step Instructions**
@@ -34,7 +33,7 @@ cd ScholAmigo
 
 1. It is possible that `chromium:arm64` and `chromium-driver:arm64` in the Dockerfile will not work for Windows; therefore, so Chrome and Chrome driver will need to be installed manually.
 2. After that, the script for scraping_daad.py needs to be changed with relevant paths:
-   
+
 ```python
 options.binary_location = r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
 ...
@@ -49,6 +48,7 @@ For Linux-based OS run the following command to create directories for Airflow:
 mkdir -p ./dags ./logs ./plugins
 echo -e "AIRFLOW_UID=$(id -u)" > .env
 ```
+
 For other operating systems, you may get a warning that AIRFLOW_UID is not set, but you can safely ignore it. You can also manually create an .env file in the same folder as docker-compose.yaml with this content to get rid of the warning:
 
 ```bash
@@ -92,15 +92,13 @@ docker-compose up airflow-init
 docker-compose up
 ```
 
-
 #### **Step 4: Access Airflow**
 
 - Open your browser and navigate to [http://localhost:8080](http://localhost:8080).
 - Use the following credentials to log in:
-    - **Username**: airflow
-    - **Password**: airflow
+  - **Username**: airflow
+  - **Password**: airflow
 - Manually trigger the DAGs for demonstration
-
 
 #### **Step 5: Access Kafka Messages**
 
@@ -111,6 +109,13 @@ To visually see messages produced by Kafka producers, open [http://localhost:902
 ### **Troubleshooting**
 
 Ensure sufficient system resources are allocated to Docker (Airflow recommends allocating 10GB of RAM for Docker, according to instructions provided in this link: [https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#fetching-docker-compose-yaml](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#fetching-docker-compose-yaml)).
+
+---
+
+
+
+### Example Output
+In the folder 'outputs' we present the generate files from running the pipeline. These files shows how the data is structured after being extracted from the data sources. Furthermore, these files are also stores in the Amazon S3 buckets created for this project.
 
 ---
 

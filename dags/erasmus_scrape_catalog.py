@@ -4,6 +4,7 @@ import pandas as pd
 
 BASE_URL = "https://www.eacea.ec.europa.eu/scholarships/erasmus-mundus-catalogue_en?page="
 
+#scrapes scholarship titles and links from the Erasmus Mundus scholarship catalog
 def get_scholarships(page_count: int = 11):
     all_scholarships = []
     
@@ -27,7 +28,6 @@ def get_scholarships(page_count: int = 11):
         for div in article_divs:
             title_span = div.find("span", class_="ecl-link__label")
             link_a    = div.find("a", class_="ecl-link ecl-link--standalone ecl-link--icon")
-            #desc_div  = div.find("div", class_="ecl-content-block__description")
             
             title = title_span.get_text(strip=True) if title_span else None
             link  = link_a.get("href") if link_a else None
@@ -39,6 +39,7 @@ def get_scholarships(page_count: int = 11):
     print(f"[ScrapeCatalog] Total scholarships found: {len(df)}")
     return df
 
+#filters the scraped df to include only specific target scholarships based on predefined URLs
 def target_scholarships(df: pd.DataFrame):
     target_scholarships = [
         'https://resound-ma.eu/',

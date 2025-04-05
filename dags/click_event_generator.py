@@ -1,10 +1,11 @@
 import random
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from faker import Faker
-import pytz
+
 
 fake = Faker()
 
+#generates synthetic clickstream events for various actions types on the website
 class ClickEventGenerator:
     def __init__(self):
         self.user_ids = [f"{random.randint(100000000, 999999999)}" for _ in range(10)]
@@ -15,7 +16,6 @@ class ClickEventGenerator:
         self.filter_parameters = [
             'Filter: {{Deadline: {}, Desired Country: {}, Country Origin: {}, Achieved Degree: {},  Desired Degree: {}, Field of Study: {}, Type: {}}}'
         ]
-        #self.base_timestamp = datetime(2025, 3, 8, 16, 42, 15, tzinfo=pytz.timezone('CET'))
 
     def _generate_synthetic_data(self):
         return {
@@ -29,7 +29,6 @@ class ClickEventGenerator:
     def _generate_base_event(self, page):
         user_id = random.choice(self.user_ids)
         session_id = f"{random.randint(1, 1000)}"
-        #timestamp = self.base_timestamp + timedelta(seconds=random.randint(0, 86400))
         now = datetime.now()
         random_seconds_ago = random.randint(0, 3600)
         timestamp = now - timedelta(seconds=random_seconds_ago)
@@ -91,11 +90,15 @@ class ClickEventGenerator:
 
     def generate_random_event(self):
         event_type = random.choice(['search', 'filter', 'details', 'faq'])
+        #Search events: Simulates a user clicking the "Search" button with input data
         if event_type == 'search':
             return self.generate_search_event()
+        #Filter events: Simulates a user applying filters with various parameters
         elif event_type == 'filter':
             return self.generate_filter_event()
+        #Details events: Simulates interactions with scholarship details or saving actions
         elif event_type == 'details':
             return self.generate_details_event()
         else:
+            #FAQ events: Simulates interactions with the FAQ page
             return self.generate_faq_event()
