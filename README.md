@@ -18,11 +18,11 @@ docker --version
 docker-compose --version
 ```
 
-3. Clone the repository containing the Docker folder:
+3. Clone the repository:
 
 ```bash
 git clone https://github.com/stesilva/ScholAmigo
-cd <repository-folder>
+cd <ScholAmigo>
 ```
 
 
@@ -61,7 +61,7 @@ AIRFLOW_UID=50000
 - Final structure of the directory should look like this:
 
 ```
-Docker/
+ScholAmigo/
 ├── dags/
 │   ├── airflow_batch_daad.py
 │   ├── ...
@@ -84,7 +84,7 @@ Docker/
 
 #### **Step 3: Build and Run Docker Compose**
 
-Navigate to the main folder (with docler-compose.yaml) and run these commands to build and start your Airflow environment:
+Navigate to the main folder (with docker-compose.yaml) and run these commands to build and start your Airflow environment:
 
 ```bash
 docker-compose build
