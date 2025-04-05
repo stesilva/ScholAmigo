@@ -66,15 +66,15 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-    AWS_CONFIG_FILE: /root/.aws/config
-    AWS_SHARED_CREDENTIALS_FILE: /root/.aws/credentials 
+    AWS_CONFIG_FILE: /home/airflow/.aws/config
+    AWS_SHARED_CREDENTIALS_FILE: /home/airflow/.aws/credentials 
     
 
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-    - ./aws:/root/.aws:ro
+    - ./aws:/home/airflow/.aws:ro
 
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
@@ -124,18 +124,6 @@ services:
         condition: service_completed_successfully
     networks:
       - kafka_network 
-    # environment:
-    #   - AIRFLOW__CORE__DAG_FILE_PROCESSOR_TIMEOUT=180
-    #   - AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT=120
-    #   - AIRFLOW__WEBSERVER__WORKERS=4                     # Number of worker processes
-    #   - AIRFLOW__WEBSERVER__WORKER_CLASS=gevent           # Use gevent for async workers
-    #   - AIRFLOW__WEBSERVER__WORKER_TIMEOUT=120            # Worker timeout (seconds)
-    #   - AIRFLOW__WEBSERVER__WEB_SERVER_PORT=8080          # Port
-      
-    #   # Memory limits (helps prevent OOM crashes)
-    #   - AIRFLOW__WEBSERVER__WORKER_REFRESH_INTERVAL=3600  # How often to restart workers (helps with memory leaks)
-    #   - GUNICORN_CMD_ARGS=--max-requests=1000 --max-requests-jitter=50  # Rotate workers periodically
-    
 
   airflow-scheduler:
     <<: *airflow-common
@@ -147,17 +135,6 @@ services:
       retries: 5
       start_period: 30s
     restart: always
-    # deploy:
-    #   resources:
-    #     limits:
-    #       cpus: '3'
-    #       memory: 8G
-    #     reservations:
-    #       memory: 4G
-    # environment:
-    #   - AIRFLOW__CORE__DAG_FILE_PROCESSOR_TIMEOUT=180
-    #   - AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT=120
-    #   - AIRFLOW__SCHEDULER__PARSING_PROCESSES=3
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:

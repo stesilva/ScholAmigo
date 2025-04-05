@@ -17,13 +17,6 @@ from send_data_to_aws import send_data_to_aws
 from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
-# options = webdriver.ChromeOptions()
-# options.add_argument("--disable-dev-shm-usage")
-# options.add_argument("--disable-gpu")
-# options.add_argument("--window-size=1920,1080")
-# service = Service(ChromeDriverManager().install())
-# driver = webdriver.Chrome(service=service,
-#         options=options)
 options = Options()
 options.add_argument('--headless')
 options.add_argument("--no-sandbox")
@@ -32,32 +25,6 @@ driver = webdriver.Chrome(
     service=Service("/usr/bin/chromedriver"),
     options=options
 )
-
-# def send_data_to_aws(scholarships_data):
-
-#     # Convert JSON data to a string
-#     json_data = json.dumps(scholarships_data, indent=4)
-
-#     # Initialize the S3 client
-#     session = boto3.Session(profile_name="bdm_group_member")
-#     s3 = session.client("s3")
-
-#     # Specify the S3 bucket and file name
-#     bucket_name = "scholarships-data"
-#     file_name = "german_scholarships_data.json"
-
-#     # Upload the JSON file to S3
-#     try:
-#         s3.put_object(
-#             Bucket=bucket_name,
-#             Key=file_name,
-#             Body=json_data,
-#             ContentType="application/json"  # Optional: Set the content type
-#         )
-#         print(f"File '{file_name}' uploaded successfully to S3 bucket '{bucket_name}'.")
-#     except Exception as e:
-#         print(f"Error uploading file to S3: {e}")
-
 
 def save_data_to_json(data, filename="/german_scholarships_data.json"):
     """
@@ -143,11 +110,6 @@ def extract_data_from_page():
         data["Overview"] = "N/A"
 
     try:
-        # req_tab_link = WebDriverWait(driver, 10).until(
-        #     EC.element_to_be_clickable((By.CSS_SELECTOR, "li#bewerbungsvoraussetzungen > a.voraussetzungen"))
-        # )
-        # driver.execute_script("arguments[0].scrollIntoView();", req_tab_link)
-        # req_tab_link.click()
         application_requirements = driver.find_element(By.CSS_SELECTOR, "#voraussetzungen")
         
         # Example: Extract the deadline
@@ -156,11 +118,6 @@ def extract_data_from_page():
         data["Application Requirements"] = "N/A"
 
     try:
-        # proc_tab_link = WebDriverWait(driver, 10).until(
-        #     EC.element_to_be_clickable((By.CSS_SELECTOR, "li#bewerbungsprozess > a.prozess"))
-        # )
-        # driver.execute_script("arguments[0].scrollIntoView();", proc_tab_link)
-        # proc_tab_link.click()
         application_procedure = driver.find_element(By.CSS_SELECTOR, "#prozess")
         # Example: Extract the deadline
         data["Application Procedure"] = application_procedure.get_attribute("innerText")
@@ -173,11 +130,6 @@ def extract_data_from_page():
         print(f"Unexpected error processing {link}: {e}")
 
     try:
-        # instr_tab_link = WebDriverWait(driver, 10).until(
-        #     EC.element_to_be_clickable((By.CSS_SELECTOR, "li#bewerbung-einreichen > a.bewerbung"))
-        # )
-        # driver.execute_script("arguments[0].scrollIntoView();", instr_tab_link)
-        # instr_tab_link.click()
         application_instructions = driver.find_element(By.CSS_SELECTOR, "#bewerbung")
         
         # Example: Extract the deadline
@@ -191,11 +143,6 @@ def extract_data_from_page():
         print(f"Unexpected error processing {link}: {e}")
 
     try:
-        # contact_tab_link = WebDriverWait(driver, 10).until(
-        #     EC.element_to_be_clickable((By.CSS_SELECTOR, "li#kontaktundberatung > a.kontaktberatung"))
-        # )
-        # driver.execute_script("arguments[0].scrollIntoView();", contact_tab_link)
-        # contact_tab_link.click()
         contact = driver.find_element(By.CSS_SELECTOR, "#kontaktberatung")
 
         # Example: Extract the deadline
@@ -322,88 +269,3 @@ def scrape_callable():
 
     # Close the WebDriver
     driver.quit()
-
-#except:
-   # driver.quit()
-'''for index, link in enumerate(result_links):
-    print(f"Processing result {index + 1} of {len(result_links)}")
-
-    # Re-locate the link to avoid StaleElementReferenceException
-    link = driver.find_elements(By.CSS_SELECTOR, ".result-item a")[index]
-
-    # Click the link to open the result page
-    link.click()
-
-    # Wait for the result page to load
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, ".result-page-content"))  # Replace ".result-page-content" with the actual selector for the result page content
-    )
-
-    # Extract information from the result page
-    try:
-        title = driver.find_element(By.CSS_SELECTOR, "h1").text  # Replace "h1" with the actual selector for the title
-        description = driver.find_element(By.CSS_SELECTOR, ".description").text  # Replace ".description" with the actual selector for the description
-        print(f"Title: {title}")
-        print(f"Description: {description}")
-    except Exception as e:
-        print(f"Error extracting information from result {index + 1}: {e}")
-
-    # Go back to the main results page
-    driver.back()
-
-    # Wait for the main results page to load
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, ".result-item"))  # Replace ".result-item" with the actual selector for results
-    )
-    
-    
-    
-    #pagination_buttons = driver.find_elements(By.CSS_SELECTOR, "div.clearfix.pagination-wrapper ul.pagination li:not([class]) a")  
-    #next_button = driver.find_element(By.XPATH, "//div[@class='clearfix pagination-wrapper']//ul[@class='pagination']//li:not([class])//a[last()]")
-    
-    #pagination_buttons[-1]
-    # 
-    # 
-    # 
-# Switch back to the main tab
-'''
-
-
-
-# try:
-#     country_dropdown = WebDriverWait(driver, 10).until(
-#         EC.presence_of_element_located((By.ID, "s-land"))
-#     )
-#     print("Drop-down is found.")
-
-# except Exception as e:
-#     print("Drop-down is not found:", e)
-
-
-# option_text = "Kazakhstan"
-# script = f"""
-#     var select = document.querySelector("#s-land");
-#     for (var i = 0; i < select.options.length; i++) {{
-#         if (select.options[i].text === "{option_text}") {{
-#             select.selectedIndex = i;
-#             return i;
-#             select.dispatchEvent(new Event('change'));
-#             break;
-#         }}
-#     }}
-# """
-
-# try:
-#     status_dropdown = WebDriverWait(driver, 10).until(
-#         EC.presence_of_element_located((By.ID, "s-status"))
-#     )
-#     print("Drop-down is found.")
-
-# except Exception as e:
-#     print("Drop-down is not found:", e)
-# print(driver.execute_script(script))
-# apply_button = WebDriverWait(driver, 10).until(
-#     EC.element_to_be_clickable((By.ID, "stipdb-submit"))
-# )
-# apply_button.click()
-# count=0
