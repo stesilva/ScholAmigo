@@ -2,7 +2,7 @@ from datetime import datetime
 from airflow.exceptions import AirflowException
 from airflow.decorators import dag, task
 import os, re, tarfile
-from linkedin_scrapping import scrape_linkedin
+from scraping_linkedin import scrape_linkedin
 from datetime import timedelta
 
 
