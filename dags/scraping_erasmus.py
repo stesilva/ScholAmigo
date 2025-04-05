@@ -2,10 +2,10 @@ import json
 from datetime import datetime
 import pandas as pd
 
-from scrape_catalog import get_scholarships, target_scholarships
-from scrape_subpages import get_subpages
-from clean_links import clean_subpages #filter_by_subpage_count
-from parse_pages import parse_all_subpages
+from erasmus_scrape_catalog import get_scholarships, target_scholarships
+from erasmus_scrape_subpages import get_subpages
+from erasmus_clean_links import clean_subpages #filter_by_subpage_count
+from erasmus_parse_pages import parse_all_subpages
 from send_data_to_aws import send_data_to_aws
 
 def run_pipeline():
