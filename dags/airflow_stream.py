@@ -16,4 +16,3 @@ def my_dag():
     produce_kafka()
 
 my_dag()
-    
