@@ -22,7 +22,7 @@ def run_pipeline():
     #save to json
     timestamp = datetime.now().strftime("%Y-%m")
     filename  = f"{timestamp}_erasmus_scholarship_data.json"
-    send_data_to_aws(structured_data, "bronze-bucket-bdm", "scholarship_data/", filename)
+    send_data_to_aws(structured_data, "scholarship_data", filename)
     
 if __name__ == "__main__":
     run_pipeline()

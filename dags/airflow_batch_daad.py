@@ -24,11 +24,8 @@ from scraping_daad import scrape_callable
 from datetime import timedelta
 
 
-log_file='/Users/elnararb/airflow/the_logs/log.txt'
-output_path='/Users/elnararb/airflow/the_logs'
-
 @dag('batch_scholarships_daad', start_date=datetime(2025, 3 , 29),
-        description='DAG to scrape german scholarship data', tags=['batch_scholarships_daad'],
+        description='DAG to scrape german scholarship data', tags=['batch_processing'],
         schedule='0 1 1 * *', catchup=False)
 def my_dag():
 

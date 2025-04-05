@@ -412,8 +412,8 @@ class LinkedInScraper:
     def save_data(self, bucket_name, all_profile_data, folder_name):
         
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-        s3_file_name = f"{timestamp}_linkedin_profile_data.json"
-        send_data_to_aws(all_profile_data, bucket_name, folder_name, s3_file_name)
+        s3_file_name = f"{folder_name}{timestamp}_linkedin_profile_data.json"
+        send_data_to_aws(all_profile_data, bucket_name, s3_file_name)
 
     def close(self):
         self.driver.quit()        
@@ -481,7 +481,7 @@ def scrape_linkedin():
 
     session = boto3.Session(profile_name="bdm_group_member")
     s3 = session.client("s3")
-    bucket_name = 'bronze-bucket-bdm'
+    bucket_name = 'linkedin_data'
     input_folder_name = 'application_data/'
     output_folder_name = 'linkedin_users_data/'
     linkedin_urls = retrive_linkedin_urls_s3(s3,bucket_name,input_folder_name)

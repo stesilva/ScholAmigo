@@ -19,12 +19,3 @@ def my_dag():
 
 my_dag()
     
-
-
-    # @task
-    # def cleanup_tempfile(file_path):
-    #     import os
-    #     if os.path.exists(file_path):
-    #         os.remove(file_path)
-    # aws_task(scholarship_data)
-    # cleanup_tempfile(scholarship_data)
