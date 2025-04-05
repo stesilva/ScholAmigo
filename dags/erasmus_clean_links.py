@@ -1,7 +1,10 @@
 import pandas as pd
 
+#cleans and processes subpage data from a df
 def clean_subpages(subpages_df: pd.DataFrame):
+    #elodes the "subpages" column into individual row
     exploded = subpages_df.explode("subpages").reset_index(drop=True)
+    #flters out subpages containing "/#" to remove invalid links
     filtered = exploded[~exploded["subpages"].str.contains(r"/#", na=False)].copy()
     subpage_counts = (
         filtered

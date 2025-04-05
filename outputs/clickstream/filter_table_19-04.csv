@@ -1,0 +1,4 @@
+id,user_id,timestamp,page,clicked_element,clicked_parameter,duration,location
+65,623061185,2025-04-05 18:06:45,/scholarships,"""Filter"" dropdown","Filter: {Deadline: Fall, Desired Country: Peru, Country Origin: Egypt, Achieved Degree: Bachelor,  Desired Degree: None, Field of Study: Records manager, Type: Partial}",0.85,"68.8150205, 93.373522"
+72,946238717,2025-04-05 18:08:07,/scholarships,"""Filter"" dropdown","Filter: {Deadline: None, Desired Country: None, Country Origin: Mauritius, Achieved Degree: Master,  Desired Degree: None, Field of Study: Music tutor, Type: None}",0.94,"4.8373535, 161.376190"
+80,399747708,2025-04-05 18:06:32,/scholarships,"""Filter"" dropdown","Filter: {Deadline: Fall, Desired Country: Saint Pierre and Miquelon, Country Origin: Greece, Achieved Degree: Bachelor,  Desired Degree: PhD, Field of Study: Occupational therapist, Type: Full}",2.41,"79.1914055, -46.974519"

@@ -2,15 +2,11 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, TimeoutException
 import logging
-import csv
-import boto3
 import json
 from webdriver_manager.chrome import ChromeDriverManager
 from send_data_to_aws import send_data_to_aws
@@ -124,7 +120,6 @@ def extract_data_from_page():
     except TimeoutException:
         print(f"Timeout while processing {link}. Skipping...")
     except NoSuchElementException:
-        #print(f"Element not found on {link}. Skipping...")
         data["Application Procedure"] = "N/A"
     except Exception as e:
         print(f"Unexpected error processing {link}: {e}")
@@ -137,7 +132,6 @@ def extract_data_from_page():
     except TimeoutException:
         print(f"Timeout while processing {link}. Skipping...")
     except NoSuchElementException:
-        #print(f"Element not found on {link}. Skipping...")
         data["Application Instructions"] = "N/A"
     except Exception as e:
         print(f"Unexpected error processing {link}: {e}")
@@ -150,7 +144,6 @@ def extract_data_from_page():
     except TimeoutException:
         print(f"Timeout while processing {link}. Skipping...")
     except NoSuchElementException:
-        #print(f"Element not found on {link}. Skipping...")
         data["Contact Information"] = "N/A"
     except Exception as e:
         print(f"Unexpected error processing {link}: {e}")
@@ -184,8 +177,6 @@ def scrape_callable():
 
     #Extract all possible countries of origin
     origins, origin_mapping=extract_origin_numbers()
-    # origins =[1]
-    # origin_mapping={1: "A"}
     print(origins)
 
     scholarships_data=[]

@@ -1,6 +1,4 @@
 import warnings
-import os
-import json
 from bs4 import BeautifulSoup
 from httpcore import TimeoutException
 from selenium import webdriver
@@ -12,7 +10,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from dotenv import load_dotenv
 import boto3
 from datetime import datetime
-import re
 from send_data_to_aws import send_data_to_aws
 
 warnings.filterwarnings("ignore")
@@ -45,6 +42,7 @@ class LinkedInScraper:
         self.scrape_section('courses', self.scrape_courses)
         self.scrape_section('honors', self.scrape_honors)
 
+    #login to LinkedIn using provided credentials
     def login(self):
         myemail = "bdmproject2025@gmail.com"  # Directly insert your email
         mypassword = "bdmprojecttests"  
@@ -57,19 +55,18 @@ class LinkedInScraper:
 
 
     def scrape_section(self, section_name, scrape_function):
-        """Generic method to handle section scraping"""
-        section_url = f"{self.base_url}/details/{section_name}/"
+        section_url = f"{self.base_url}/details/{section_name}/" #access directly to the section page
         try:
             print(f"Scraping {section_name}...")
             self.driver.get(section_url)
-            self.wait_for_page_load(10)
+            self.wait_for_page_load(10) #wait for the page to load
             scrape_function()
         except TimeoutException:
             print(f"Timed out waiting for {section_name} page to load")
         except Exception as e:
             print(f"Error scraping {section_name}: {str(e)}")
 
-
+    #extract basic profile information
     def scrape_basic_info(self):
         try:
             soup = BeautifulSoup(self.driver.page_source, 'lxml')
@@ -78,14 +75,14 @@ class LinkedInScraper:
         except Exception as e:
             print(f"Error scraping basic info: {str(e)}")
 
-
+    #for the following sections, the scraping functions follows the same format as Linkedin presentes the data in the same way
     def scrape_experiences(self):
         soup = BeautifulSoup(self.driver.page_source, 'lxml')
         print(self.driver.page_source)
         experiences_section = soup.find('div', {'class': 'pvs-list__container'})
         if experiences_section:
             experiences = experiences_section.find_all('li', {'class': 'pvs-list__paged-list-item artdeco-list__item pvs-list__item--line-separated pvs-list__item--one-column'})
-            self.profile_data['experiences'] = [self.get_experience(experience) for experience in experiences]
+            self.profile_data['experiences'] = [self.get_experience(experience) for experience in experiences] #for each experience found
         else:
             print("No experience section found")
             self.profile_data['experiences'] = []
@@ -153,6 +150,7 @@ class LinkedInScraper:
         else:
             self.profile_data['honors'] = [] 
  
+    #handle different layout of the experience section (different roles within one company)
     def get_experience(self, experience):
         experience_dict = {
             'company_name': None,
@@ -200,6 +198,7 @@ class LinkedInScraper:
 
         return experience_dict
 
+    #for the following sections, the scraping functions are similar bc the data layout does not vary that much. Only the key attributes were retrieved
     def get_education(self, education):
         if self.verify_content(education.find('span', {'class': 'visually-hidden'})) is None:
             return {}
@@ -368,17 +367,20 @@ class LinkedInScraper:
     
     def wait_for_page_load(self, timeout=10):
         try:
+            #wait for the body tag to pe loaded
             WebDriverWait(self.driver, timeout).until(
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
         except TimeoutException:
             print("Page load timed out")
 
+    #get the text from a specific tag and attributes
     @staticmethod
     def get_text(soup, tag, attrs):
         element = soup.find(tag, attrs)
         return element.get_text().strip() if element else None 
     
+    #get the text from a nested tag and attributes
     def get_nested_text(self, parent, outer_tag, outer_attrs, inner_tag=None, inner_attrs=None):
         outer_element = parent.find(outer_tag, outer_attrs)
         if not outer_element:
@@ -388,6 +390,7 @@ class LinkedInScraper:
             return inner_element.text.strip() if inner_element else None
         return outer_element.text.strip()
 
+    #verify if the content is empty or contains a specific message (no section on Linkedin)
     def verify_content(self, span):
         if not span:
             return None 
@@ -408,9 +411,8 @@ class LinkedInScraper:
         else:
             return input
         
-        
+    #save the scraped data to S3 bucket
     def save_data(self, bucket_name, all_profile_data, folder_name):
-        
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
         s3_file_name = f"{folder_name}{timestamp}_linkedin_profile_data.json"
         send_data_to_aws(all_profile_data, bucket_name, s3_file_name)
@@ -418,7 +420,7 @@ class LinkedInScraper:
     def close(self):
         self.driver.quit()        
 
-
+#retrieve the list of user to perform the scraping
 def retrive_linkedin_urls_s3(s3,bucket_name,folder_name):
     response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name) 
     
@@ -442,9 +444,9 @@ def scrape_linkedin_profiles(scraper, linkedin_urls, bucket_name, folder_name):
     rows = [dict(zip(headers, line.split(","))) for line in lines[1:]]
 
     iteration_count=0
-    max_iterations=3
+    max_iterations=3 #limit the number of profiles to scrape for demo purposes
     try:
-        for row in rows:
+        for row in rows: #for each retrieved profile
             if iteration_count >= max_iterations:
                 break
             profile_title = row['name']
@@ -479,6 +481,7 @@ def scrape_linkedin_profiles(scraper, linkedin_urls, bucket_name, folder_name):
 
 def scrape_linkedin():
 
+    #retieve the list of users to scrape from S3 bucket
     session = boto3.Session(profile_name="bdm_group_member")
     s3 = session.client("s3")
     bucket_name = 'linkedin-data-bdm'

@@ -1,6 +1,5 @@
 import psycopg2
 import traceback
-from datetime import datetime
 
 PG_CONFIG = {
     'dbname': 'kafka',
@@ -16,8 +15,8 @@ def clean_old_clickstream():
     try:
         conn = psycopg2.connect(**PG_CONFIG)
         cursor = conn.cursor()
-
         for table in TABLES:
+            #Deletes records older than 1 day from specified tables. (Hot Database)
             cursor.execute(f"DELETE FROM {table} WHERE timestamp < NOW() - INTERVAL '1 day';")
             print(f"Old data deleted from {table}")
 
