@@ -41,7 +41,8 @@ def extract_origin_numbers():
         url (str): The URL of the webpage containing the dropdown.
 
     Returns:
-        list: A list of origin numbers (integers).
+        list: a list of origin numbers / country codes (integers) available on the website and
+        mapping: a mapping from the origin number to the corresponding names of countries.
     """
     
     try:
@@ -56,6 +57,7 @@ def extract_origin_numbers():
         origin_numbers = []
 
         origin_mapping = {}
+        # Limiting the country to 1 for demonstration purposes. Check for max iterations can be removed for full scale scraping
         iteration_count=0
         max_iterations=1
         for option in options:
@@ -161,6 +163,7 @@ def extract_data_from_page():
 
 def scrape_callable():
     base_url="https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database/"
+    # Limited to Graduate programs for demonstration purposes. range(3,4) can be changed to range(1,6) for full scale scraping
     status_range = range(3,4)
     status_mapping = {
         1: "Undergraduate",
@@ -183,7 +186,7 @@ def scrape_callable():
     except Exception as e:
         print("No cookies screen found or could not accept cookies:", e)
 
-    #Extract all possible countries of origin
+    # Extract all possible countries of origin (limited to 1 for demonstration purposes)
     origins, origin_mapping=extract_origin_numbers()
     print(origins)
 
@@ -262,7 +265,7 @@ def scrape_callable():
                         driver.close()  # Close the tab if it was opened
                         driver.switch_to.window(driver.window_handles[0])
 
-    # Save the data to a JSON file
+    # Send data to aws bucket
     # save_data_to_json(scholarships_data)
     send_data_to_aws(scholarships_data, "scholarship-data-bdm", f"{datetime.now().strftime("%Y-%m-%d_%H-%M")}_german_scholarships_data.json")
 
