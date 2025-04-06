@@ -58,6 +58,7 @@ AIRFLOW_UID=50000
 #### **Step 2: Place Files in the Appropriate Folders**
 
 - Copy DAG files → Place them in the `./dags` folder.
+- Create folder called aws and place config and credentials files (sent by email)
 - Final structure of the directory should look like this:
 
 ```
