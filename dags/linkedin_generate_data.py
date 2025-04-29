@@ -334,6 +334,8 @@ class LinkedInGenerateData:
     def generate_basic_info(self):
         try:
             self.profile_data['name'] = self.faker.name()
+            self.profile_data['age'] = self.faker.random_int(min=18,max=100)
+            self.profile_data['email'] = self.faker.email()
             self.profile_data['country'] = random.choice(country)
         except Exception as e:
             print(f"Error generating basic info: {str(e)}")
@@ -362,7 +364,7 @@ class LinkedInGenerateData:
             self.profile_data['educations'] = [
                 {
                     'college': f"University {self.faker.street_name()}",
-                    'degree': random.choice(['Bachelor', 'Master', 'PhD']),
+                    'degree': random.choice(['High School','Bachelor', 'Master', 'PhD']),
                     'graduation_year': f"{random.randint(2010, 2025)}",
                     'major': f"{random.choice(majors)}",
                 }
