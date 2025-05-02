@@ -436,7 +436,7 @@ class LinkedInGenerateData:
     #save the generated data to S3 bucket
     def save_data(self, bucket_name, all_profile_data, folder_name):
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-        s3_file_name = f"{folder_name}/{timestamp}_linkedin_profile_data.json"
+        s3_file_name = f"{folder_name}{timestamp}_linkedin_profile_data.json"
         send_data_to_aws(all_profile_data, bucket_name, s3_file_name)
        
 
