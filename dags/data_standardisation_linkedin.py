@@ -10,6 +10,7 @@ from pyspark.sql.functions import (
 from pyspark.sql.window import Window
 import pycountry
 import pyspark.sql.functions as F
+import tempfile
 
 warnings.filterwarnings("ignore")
 load_dotenv()
@@ -288,32 +289,31 @@ def standardize_linkedin_data(df):
     
     return df
 
-#save the standardized data to S3 and move the files to a new folder (day of processing)
-def save_data(bucket_name, df, folder_name):
+def save_data_with_original_name(df, bucket_name, folder_name, original_filename):
     try:
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
-        day_folder = datetime.now().strftime("%Y-%m-%d")
-        s3_file_name = f"{folder_name}{timestamp}_trusted_linkedin_user_data.json"
-        df.coalesce(10).write.mode("append").json(f"s3a://{bucket_name}/{s3_file_name}") #save the data to S3 in JSON format with coalesce to reduce the number of files (10 files per partition)
-        logging.info("Data saved successfully.")
+        #write to a temporary file
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_output = os.path.join(tmpdir, "output_data")
+            df.coalesce(1).write.mode("overwrite").json(tmp_output)
 
-        #move files to new folder (day of processing)
-        session = boto3.Session(profile_name="bdm_group_member")
-        s3 = session.client("s3")
-        new_folder = f"{folder_name}{day_folder}/"
-        response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
-        if 'Contents' in response:
-            for obj in response['Contents']:
-                old_key = obj['Key']
-                if old_key.startswith(folder_name) and old_key != new_folder:
-                    new_key = old_key.replace(folder_name, new_folder, 1)
-                    s3.copy_object(Bucket=bucket_name, CopySource={'Bucket': bucket_name, 'Key': old_key}, Key=new_key)
-                    s3.delete_object(Bucket=bucket_name, Key=old_key)
-            logging.info(f"Files moved to folder: {new_folder}")
-        else:
-            logging.warning(f"No files found in folder: {folder_name}")
+            #find the generated JSON file
+            json_file_path = None
+            for fname in os.listdir(tmp_output):
+                if fname.endswith(".json"):
+                    json_file_path = os.path.join(tmp_output, fname)
+                    break
+            if not json_file_path:
+                raise FileNotFoundError("No JSON file found in Spark output.")
+
+            #upload to S3 with the original name
+            s3 = boto3.client("s3")
+            s3_key = f"{folder_name}{original_filename}"
+            s3.upload_file(json_file_path, bucket_name, s3_key)
+
+            logging.info(f"Data saved successfully to s3://{bucket_name}/{s3_key}")
+
     except Exception as e:
-        logging.error(f"Error during data saving and moving: {e}")
+        logging.error(f"Error during data saving: {e}")
 
 #retrives the latest file from S3 bucket and folder and loads it into a Spark df (latestes linkedin user data)
 def retrive_linkedin_user_data(s3, bucket_name, folder_name):
@@ -321,7 +321,9 @@ def retrive_linkedin_user_data(s3, bucket_name, folder_name):
     if 'Contents' not in response:
         logging.error(f"Error: No file found at {bucket_name}")
         return None
-    latest_file = max(response['Contents'], key=lambda obj: obj['LastModified'])['Key']
+    latest_file_info = max(response['Contents'], key=lambda obj: obj['LastModified'])
+    latest_file = latest_file_info['Key']
+    original_filename = os.path.basename(latest_file)
     latest_file_path = f"s3a://{bucket_name}/{latest_file}"
 
     #for spark to work properly
@@ -346,7 +348,7 @@ def retrive_linkedin_user_data(s3, bucket_name, folder_name):
     spark._jsc.hadoopConfiguration().set("fs.s3a.endpoint", "s3.amazonaws.com")
     
     linkedin_data = spark.read.option("multiline", "true").json(latest_file_path) #allows to read a multilene JSON file
-    return linkedin_data
+    return linkedin_data, original_filename.split('/')[-1] #return the string with the original filw name
 
 def create_linkedin_trusted_zone():
     try:
@@ -357,15 +359,14 @@ def create_linkedin_trusted_zone():
         input_folder_name = 'linkedin_users_data/'
         output_folder_name = 'standardized_linkedin_data/'
         
-        linkedin_user_data = retrive_linkedin_user_data(s3, bucket_name, input_folder_name)
+        linkedin_user_data, original_filename = retrive_linkedin_user_data(s3, bucket_name, input_folder_name)
         
         if linkedin_user_data is None:
             raise ValueError("No valid LinkedIn user data retrieved.")
         
         #standardize and clean the data, save it to S3 trusted zone
         linkedin_data_standardized_clean_non_duplicated = standardize_linkedin_data(linkedin_user_data)
-        save_data(bucket_name, linkedin_data_standardized_clean_non_duplicated, output_folder_name)
-        
+        save_data_with_original_name(linkedin_data_standardized_clean_non_duplicated,bucket_name,output_folder_name, original_filename)        
     except Exception as e:
         logging.error(f"Unexpected error: {e}")
 
