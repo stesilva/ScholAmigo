@@ -52,6 +52,8 @@ x-airflow-common: &airflow-common
   build:
     context: .
     dockerfile: ./Dockerfile
+  # env_file:
+  #   - ./docker/.env
   environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -62,6 +64,7 @@ x-airflow-common: &airflow-common
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AWS_CONFIG_FILE: /home/airflow/.aws/config
     AWS_SHARED_CREDENTIALS_FILE: /home/airflow/.aws/credentials
+    DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-default_value} 
 
   volumes:
     - ./dags:/opt/airflow/dags

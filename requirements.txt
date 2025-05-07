@@ -13,3 +13,4 @@ pytz
 httpcore
 dotenv
 gevent
+discord_webhook
