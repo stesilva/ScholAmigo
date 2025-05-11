@@ -13,8 +13,8 @@ PG_CONFIG = {
     'port': '5432'
 }
 
-S3_BUCKET = "clickstream-history-bdm"
-AWS_PROFILE = "bdm_group_member"
+S3_BUCKET = "clickstream-history-ingestion"
+AWS_PROFILE = "bdm-2025"
 S3_FOLDER = "clickstream_history/"
 
 

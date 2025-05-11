@@ -11,8 +11,8 @@ class ClickEventGenerator:
         self.user_ids = [f"{random.randint(100000000, 999999999)}" for _ in range(10)]
         self.pages = ['/scholarships', '/details', '/faq']
         self.deadline = ['Spring', 'Fall', 'None']
-        self.scholarshipType = ['Full', 'Partial', 'None']
-        self.degreeType = ['Bachelor', 'Master', 'PhD', 'None']
+        self.scholarshipType = ['Fully Funded', 'Partially Funded', 'None']
+        self.degreeType = ['Bachelor', 'Master', 'PhD', 'Postdoctoral researchers', 'Faculty' 'None']
         self.filter_parameters = [
             'Filter: {{Deadline: {}, Desired Country: {}, Country Origin: {}, Achieved Degree: {},  Desired Degree: {}, Field of Study: {}, Type: {}}}'
         ]

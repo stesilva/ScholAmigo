@@ -316,15 +316,15 @@ def save_data_with_original_name(df, bucket_name, folder_name, original_filename
         logging.error(f"Error during data saving: {e}")
 
 #retrives the latest file from S3 bucket and folder and loads it into a Spark df (latestes linkedin user data)
-def retrive_linkedin_user_data(s3, bucket_name, folder_name):
-    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
+def retrive_linkedin_user_data(s3, input_bucket_name, folder_name):
+    response = s3.list_objects_v2(Bucket=input_bucket_name, Prefix=folder_name)
     if 'Contents' not in response:
-        logging.error(f"Error: No file found at {bucket_name}")
+        logging.error(f"Error: No file found at {input_bucket_name}")
         return None
     latest_file_info = max(response['Contents'], key=lambda obj: obj['LastModified'])
     latest_file = latest_file_info['Key']
     original_filename = os.path.basename(latest_file)
-    latest_file_path = f"s3a://{bucket_name}/{latest_file}"
+    latest_file_path = f"s3a://{input_bucket_name}/{latest_file}"
 
     #for spark to work properly
     os.environ["PYSPARK_PYTHON"] = r"C:/Program Files/Python312/python.exe"
@@ -355,18 +355,19 @@ def create_linkedin_trusted_zone():
         #connect to S3 and retrieve latest linkedin user data
         session = boto3.Session(profile_name="bdm_group_member")
         s3 = session.client("s3")
-        bucket_name = 'linkedin-data-bdm'
+        input_bucket_name = 'linkedin-data-ingestion'
         input_folder_name = 'linkedin_users_data/'
+        output_bucket_name = 'linkedin-data-trusted'
         output_folder_name = 'standardized_linkedin_data/'
         
-        linkedin_user_data, original_filename = retrive_linkedin_user_data(s3, bucket_name, input_folder_name)
+        linkedin_user_data, original_filename = retrive_linkedin_user_data(s3, input_bucket_name, input_folder_name)
         
         if linkedin_user_data is None:
             raise ValueError("No valid LinkedIn user data retrieved.")
         
         #standardize and clean the data, save it to S3 trusted zone
         linkedin_data_standardized_clean_non_duplicated = standardize_linkedin_data(linkedin_user_data)
-        save_data_with_original_name(linkedin_data_standardized_clean_non_duplicated,bucket_name,output_folder_name, original_filename)        
+        save_data_with_original_name(linkedin_data_standardized_clean_non_duplicated,output_bucket_name,output_folder_name,original_filename)        
     except Exception as e:
         logging.error(f"Unexpected error: {e}")
 

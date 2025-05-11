@@ -14,9 +14,9 @@ SPARK_JARS_PATH = 'C:/Program Files/spark_jars'
 PYSPARK_PYTHON_PATH = r"C:/Program Files/Python312/python.exe"
 PYSPARK_DRIVER_PYTHON_PATH = r"C:/Program Files/Python312/python.exe"
 
-SRC_BUCKET = "clickstream-history-bdm"
+SRC_BUCKET = "clickstream-history-ingestion"
 SRC_PREFIX = "clickstream_history/"
-DST_BUCKET = "clickstream-history-bdm"
+DST_BUCKET = "clickstream-history-trusted"
 DST_PREFIX = "standardized_clickstream_history/"
 
 warnings.filterwarnings("ignore")

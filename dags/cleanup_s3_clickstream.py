@@ -2,8 +2,8 @@ import boto3
 from datetime import datetime
 import traceback
 
-AWS_PROFILE = "bdm_group_member"
-S3_BUCKET = "clickstream-history-bdm"
+AWS_PROFILE = "bdm-2025"
+S3_BUCKET = "clickstream-history-ingestion"
 FOLDER_PREFIX = "clickstream_history"
 DAYS_TO_KEEP = 7
 

@@ -18,8 +18,8 @@ PG_PASSWORD = "kafka_password"
 DUMP_PATH = "/tmp/pg_dump_latest.sql"
 
 #S3 config
-AWS_PROFILE = "bdm_group_member"
-S3_BUCKET = "clickstream-history-bdm"
+AWS_PROFILE = "bdm-2025"
+S3_BUCKET = "clickstream-history-ingestion"
 S3_PREFIX = "full_pg_dumps/"
 RETENTION_DAYS = 3
 
