@@ -7,7 +7,8 @@ from pyspark.sql import SparkSession
 import boto3
 import tempfile
 from typing import Set
-
+from pyspark.sql.functions import col, lower, trim
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType, FloatType, TimestampType
 
 #configurations and S3 buxkets and folders names
 SPARK_JARS_PATH = 'C:/Program Files/spark_jars'
@@ -107,8 +108,36 @@ def clean_and_save_file(spark, src_bucket, dst_bucket, key, dst_prefix):
         return
     input_path = f"s3a://{src_bucket}/{key}"
     logging.info(f"Processing {input_path}")
-    df = spark.read.option("header", "true").csv(input_path)
-    df_clean = df.na.drop()
+    
+    schema = StructType([
+        StructField("id", IntegerType(), False),
+        StructField("user_id", IntegerType(), False),
+        StructField("timestamp", TimestampType(), False),
+        StructField("page", StringType(), False),
+        StructField("clicked_element", StringType(), False),
+        StructField("clicked_parameter", StringType(), False),
+        StructField("duration", FloatType(), False),
+        StructField("location", StringType(), False)
+    ])
+    
+    df = spark.read.format("csv") \
+    .option("header", True) \
+    .option("quote", '"') \
+    .option("escape", '"') \
+    .schema(schema) \
+    .load(input_path)
+    
+    #identify string columns
+    string_cols = [f.name for f in df.schema.fields if isinstance(f.dataType, StringType)]
+
+    #transform all string columns, trim then lower case
+    df_clean = df.select(
+        *[
+            lower(trim(col(c))).alias(c) if c in string_cols else col(c)
+            for c in df.columns
+        ]
+    )
+    
     save_df_as_csv_with_original_name(df_clean, dst_bucket, dst_prefix, date_folder, filename)
 
 

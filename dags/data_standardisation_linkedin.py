@@ -18,14 +18,14 @@ load_dotenv()
 #Spark confguration
 SPARK_JARS_PATH = 'C:/Program Files/spark_jars'
 
-#transform any string to title case format (e.g. 'hello world' -> 'Hello World')
-def title_case(field):
-    return f"concat_ws(' ', transform(split(trim({field}), ' '), x -> concat(upper(substring(x, 1, 1)), lower(substring(x, 2)))) )"
+#transform any string to lower case format (e.g. 'Hello World' -> 'hello world')
+def lower_case(field):
+    return f"lower(trim({field}))"
 
 #used for validating the JSON data
-accepted_degrees = ['High School', 'Bachelor', 'Master', 'Phd']
-accepted_language_levels = ['Beginner', 'Intermediate', 'Advanced']
-valid_countries = [c.name for c in pycountry.countries]
+accepted_degrees = ['bachelor', 'master', 'phd', 'postdoctoral researchers', 'faculty']
+accepted_language_levels = ['beginner', 'intermediate', 'advanced']
+valid_countries = [c.name.lower() for c in pycountry.countries]
 email_regex = r'^[a-zA-Z0-9_.+-]+@(gmail|hotmail|example)\.(com|org|net|edu)$' #(e.g. julia@example.edu)
 country_pattern = r'^[A-Za-z\s]+$' #only letter and space
 
@@ -33,9 +33,9 @@ country_pattern = r'^[A-Za-z\s]+$' #only letter and space
 def language_rank(language_level):
     return (
         f"CASE "
-        f"WHEN {language_level} = 'Beginner' THEN 1 "
-        f"WHEN {language_level} = 'Intermediate' THEN 2 "
-        f"WHEN {language_level} = 'Advanced' THEN 3 "
+        f"WHEN {language_level} = 'beginner' THEN 1 "
+        f"WHEN {language_level} = 'intermediate' THEN 2 "
+        f"WHEN {language_level} = 'advanced' THEN 3 "
         f"ELSE 0 END"
     )
 
@@ -162,13 +162,24 @@ def keep_longest_experience(df):
 
 #clean and standardize the LinkedIn data
 def standardize_linkedin_data(df):
+    
     #standardize attributes and check bussiness rules
-    df = df.withColumn("name", expr(title_case("name"))) \
-           .withColumn("email", when(col("email").rlike(email_regex), lower(col("email")))) \
-           .withColumn("age", when((col("age").cast("int") >= 18) & (col("age").cast("int") <= 100), col("age").cast("int"))) #age constraint (18 <= age <= 100)
+    df = df.withColumn(
+        "name", expr(lower_case("name")).otherwise(None)
+    ).withColumn(
+        "email", when(
+            col("email").rlike(email_regex),
+            expr(lower_case("email"))
+        ).otherwise(None)
+    ).withColumn(
+        "age", when(
+            (col("age").cast("int") >= 18) & (col("age").cast("int") <= 100),
+            col("age").cast("int")
+        ).otherwise(None)
+    ) #age constraint (18 <= age <= 100)
 
     #check if the country is valid (only letters and spaces) and if it is in the list of valid countries
-    country_title = title_case("country")
+    country_title = lower_case("country")
     df = df.withColumn(
         "country",
         when(
@@ -177,16 +188,16 @@ def standardize_linkedin_data(df):
         )
     )
 
-    #experiences: title case and cast durations
+    #experiences: lower case and cast durations
     df = df.withColumn(
         "experiences",
         expr(f"""
             transform(experiences, x ->
                 named_struct(
-                    'company_name', {title_case('x.company_name')},
+                    'company_name', {lower_case('x.company_name')},
                     'designations', transform(x.designations, d ->
                         named_struct(
-                            'role', {title_case('d.designation')},
+                            'role', {lower_case('d.designation')},
                             'duration', cast(regexp_extract(d.duration, r'([0-9]+(?:\\.[0-9]+)?)', 1) as float)
                         )
                     )
@@ -195,82 +206,82 @@ def standardize_linkedin_data(df):
         """)
     )
 
-    #eucations: title case and degree validation
+    #eucations: lower case and degree validation
     degrees_list = ",".join([f"'{d}'" for d in accepted_degrees])
     df = df.withColumn(
         "educations",
         expr(f"""
             transform(educations, x ->
                 named_struct(
-                    'institution_name', {title_case('x.college')},
-                    'degree', case when {title_case('x.degree')} in ({degrees_list}) then {title_case('x.degree')} else null end,
+                    'institution_name', {lower_case('x.college')},
+                    'degree', case when {lower_case('x.degree')} in ({degrees_list}) then {lower_case('x.degree')} else null end,
                     'graduation_year', cast(x.graduation_year as int),
-                    'major', {title_case('x.major')}
+                    'major', {lower_case('x.major')}
                 )
             )
         """)
     )
 
-    #licenses: title case and year
+    #licenses: lower case and year
     df = df.withColumn(
         "licenses",
         expr(f"""
             transform(licenses, x ->
                 named_struct(
-                    'license_name', {title_case('x.name')},
-                    'institute_name', {title_case('x.institute')},
+                    'license_name', {lower_case('x.name')},
+                    'institute_name', {lower_case('x.institute')},
                     'issued_year', cast(x.issued_date as int)
                 )
             )
         """)
     )
 
-    #languages: title case and level validation
+    #languages: lower case and level validation
     levels_list = ",".join([f"'{l}'" for l in accepted_language_levels])
     df = df.withColumn(
         "languages",
         expr(f"""
             transform(languages, x ->
                 named_struct(
-                    'language', {title_case('x.name')},
-                    'level', case when {title_case('x.level')} in ({levels_list}) then {title_case('x.level')} else null end
+                    'language', {lower_case('x.name')},
+                    'level', case when {lower_case('x.level')} in ({levels_list}) then {lower_case('x.level')} else null end
                 )
             )
         """)
     )
 
-    #skills: title case
+    #skills: lower case
     df = df.withColumn(
         "skills",
         expr(f"""
             transform(skills, x ->
                 named_struct(
-                    'name', {title_case('x.name')}
+                    'name', {lower_case('x.name')}
                 )
             )
         """)
     )
 
-    #courses: title case
+    #courses: lower case
     df = df.withColumn(
         "courses",
         expr(f"""
             transform(courses, x ->
                 named_struct(
-                    'course_name', {title_case('x.course_name')},
-                    'association_name', {title_case('x.associated_with')}
+                    'course_name', {lower_case('x.course_name')},
+                    'association_name', {lower_case('x.associated_with')}
                 )
             )
         """)
     )
 
-    #honors: title case
+    #honors: lower case
     df = df.withColumn(
         "honors",
         expr(f"""
             transform(honors, x ->
                 named_struct(
-                    'honor', {title_case('x.honor_name')}
+                    'honor', {lower_case('x.honor_name')}
                 )
             )
         """)
