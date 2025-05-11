@@ -12,6 +12,9 @@ import pycountry
 import pyspark.sql.functions as F
 import tempfile
 
+
+
+
 warnings.filterwarnings("ignore")
 load_dotenv()
 
@@ -165,7 +168,7 @@ def standardize_linkedin_data(df):
     
     #standardize attributes and check bussiness rules
     df = df.withColumn(
-        "name", expr(lower_case("name")).otherwise(None)
+        "name", expr(lower_case("name"))
     ).withColumn(
         "email", when(
             col("email").rlike(email_regex),
@@ -364,7 +367,7 @@ def retrive_linkedin_user_data(s3, input_bucket_name, folder_name):
 def create_linkedin_trusted_zone():
     try:
         #connect to S3 and retrieve latest linkedin user data
-        session = boto3.Session(profile_name="bdm_group_member")
+        session = boto3.Session(profile_name="bdm-2025")
         s3 = session.client("s3")
         input_bucket_name = 'linkedin-data-ingestion'
         input_folder_name = 'linkedin_users_data/'
