@@ -16,7 +16,7 @@ from send_data_to_aws import send_data_to_aws
 os.environ['NO_PROXY'] = '*'
 
 # Constants
-BUCKET_NAME = 'linkedin-data-bdm'
+BUCKET_NAME = 'linkedin-data-ingestion'
 INPUT_FOLDER = 'application_data/'
 OUTPUT_FOLDER = 'linkedin_users_data/'
 AWS_CONN_ID = 'aws_default'

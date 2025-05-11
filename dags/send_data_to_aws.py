@@ -7,7 +7,7 @@ def send_data_to_aws(data, bucket_name, file_name):
     json_data = json.dumps(data, ensure_ascii=False, indent=4)
 
     # Initialize the S3 client
-    session = boto3.Session(profile_name="bdm_group_member")
+    session = boto3.Session(profile_name="bdm-2025")
     s3 = session.client("s3")
 
     # Upload the JSON file to S3

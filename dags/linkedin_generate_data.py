@@ -364,7 +364,7 @@ class LinkedInGenerateData:
             self.profile_data['educations'] = [
                 {
                     'college': f"University {self.faker.street_name()}",
-                    'degree': random.choice(['High School','Bachelor', 'Master', 'PhD']),
+                    'degree': random.choice(['Bachelor', 'Master', 'PhD', 'Postdoctoral researchers', 'Faculty']),
                     'graduation_year': f"{random.randint(2010, 2025)}",
                     'major': f"{random.choice(majors)}",
                 }
@@ -498,9 +498,9 @@ def generate_linkedin_profiles(generater, linkedin_urls, bucket_name, folder_nam
 
 def generate_linkedin():
     #retieve the list of users to generate from S3 bucket
-    session = boto3.Session(profile_name="bdm_group_member")
+    session = boto3.Session(profile_name="bdm-2025")
     s3 = session.client("s3")
-    bucket_name = 'linkedin-data-bdm'
+    bucket_name = 'linkedin-data-ingestion'
     input_folder_name = 'application_data/'
     output_folder_name = 'linkedin_users_data/'
     linkedin_urls = retrive_linkedin_urls_s3(s3,bucket_name,input_folder_name)
