@@ -2,4 +2,4 @@ id,user_id,timestamp,page,clicked_element,clicked_parameter,duration,location
 64,756725328,2025-04-05 18:04:33,/scholarships,"""Search"" button",Search Input: moore-keller scholarship,2.79,"-69.5166585, 120.270009"
 96,699090035,2025-04-05 18:07:26,/scholarships,"""Search"" button",Search Input: chase-jones scholarship,0.16,"-81.0907135, 111.610649"
 106,696952377,2025-04-05 18:08:06,/scholarships,"""Search"" button",Search Input: anderson scholarship,0.25,"-25.946476, 164.104683"
-109,815964918,2025-04-05 18:08:49,/scholarships,"""Search"" button",Search Input: kennedy scholarship,0.98,"-89.3575715, -39.202088"
+109,815964918,2025-04-05 18:08:49,/scholarships,"""Search"" button",Search Input: kennedy scholarship,,"-89.3575715, -39.202088"

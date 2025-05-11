@@ -99,7 +99,7 @@ def save_df_as_csv_with_original_name(df, dst_bucket, dst_prefix, date_folder, f
         s3_key = f"{dst_prefix}{date_folder}/{filename}"
         s3.upload_file(csv_file_path, dst_bucket, s3_key)
         logging.info(f"Saved cleaned CSV to s3://{dst_bucket}/{s3_key}")
-
+        
 #perform the cleaning of file (drops rows with null values) and saves it in the destination bucket
 def clean_and_save_file(spark, src_bucket, dst_bucket, key, dst_prefix):
     date_folder, filename = extract_date_and_filename(key)
@@ -138,6 +138,9 @@ def clean_and_save_file(spark, src_bucket, dst_bucket, key, dst_prefix):
         ]
     )
     
+    df_clean = df_clean.na.drop()
+    
+    #save cleaned data to S3
     save_df_as_csv_with_original_name(df_clean, dst_bucket, dst_prefix, date_folder, filename)
 
 
