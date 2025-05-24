@@ -6,27 +6,24 @@ fake = Faker()
 random.seed(42)
 Faker.seed(42)
 
-# Carregar o arquivo JSON
+#Load JSON base file
 with open('outputs/linkedin/2025-05-02_16-02_linkedin_profile_data.json', encoding='utf-8') as f:
     profiles = json.load(f)
 
-# Se o arquivo for uma lista de perfis, ok. Se for um dicionário, adapte conforme necessário.
-# Para garantir, vamos tentar extrair os perfis de uma lista:
 if isinstance(profiles, dict):
-    # Se o JSON for um dicionário, tente extrair os perfis de uma chave conhecida
     profiles = list(profiles.values())
 
-# Embaralhar e dividir em 90% e 10%
+#Shuffle linkedin profiles and split between 10% alumni and 90% users
 random.shuffle(profiles)
 split_idx = int(0.9 * len(profiles))
 user_profiles = profiles[:split_idx]
 alumni_profiles = profiles[split_idx:]
 
-# Planos possíveis para usuários
+#possible account plan for user
 plans = ['Free', 'Premium']
-# Status possíveis para alumni
+#possible status for alumni
 alumni_status = ['available', 'not available']
-# Bolsas fictícias para alumni
+#synthetic scholarships for alumni
 scholarships = [
     'International Leaders Scholarship',
     'STEM Excellence Award',
@@ -57,11 +54,11 @@ def build_alumni_profile(profile):
         "Status": random.choice(alumni_status)
     }
 
-# Gerar perfis para os arquivos
+#build basic profile
 user_basic_profiles = [build_user_profile(p) for p in user_profiles]
 alumni_basic_profiles = [build_alumni_profile(p) for p in alumni_profiles]
 
-# Salvar em arquivos JSON
+#save to JSON
 with open('outputs/users/user_basic_profiles.json', 'w', encoding='utf-8') as f:
     json.dump(user_basic_profiles, f, ensure_ascii=False, indent=2)
 
