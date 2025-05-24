@@ -1,4 +1,3 @@
-from datetime import datetime
 import logging
 import os
 import warnings
@@ -11,6 +10,7 @@ from pyspark.sql.window import Window
 import pycountry
 import pyspark.sql.functions as F
 import tempfile
+import json
 
 warnings.filterwarnings("ignore")
 load_dotenv()
@@ -315,11 +315,23 @@ def save_data_with_original_name(df, bucket_name, folder_name, original_filename
                     break
             if not json_file_path:
                 raise FileNotFoundError("No JSON file found in Spark output.")
+            
+            json_objects = []
+            with open(json_file_path, "r", encoding="utf-8") as fin:
+                for line in fin:
+                    line = line.strip()
+                    if line:
+                        json_objects.append(json.loads(line))
+
+            #adjust JSON format
+            json_array_path = os.path.join(tmpdir, "final_array.json")
+            with open(json_array_path, "w", encoding="utf-8") as fout:
+                json.dump(json_objects, fout, ensure_ascii=False, indent=2)
 
             #upload to S3 with the original name
             s3 = boto3.client("s3")
             s3_key = f"{folder_name}{original_filename}"
-            s3.upload_file(json_file_path, bucket_name, s3_key)
+            s3.upload_file(json_array_path, bucket_name, s3_key)
 
             logging.info(f"Data saved successfully to s3://{bucket_name}/{s3_key}")
 
