@@ -12,9 +12,6 @@ import pycountry
 import pyspark.sql.functions as F
 import tempfile
 
-
-
-
 warnings.filterwarnings("ignore")
 load_dotenv()
 

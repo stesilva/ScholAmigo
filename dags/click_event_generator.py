@@ -97,10 +97,12 @@ class ClickEventGenerator:
         self.pages = ['/scholarships', '/details', '/faq']
         self.deadline = ['Spring', 'Fall', 'None']
         self.scholarshipType = ['Fully Funded', 'Partially Funded', 'None']
-        self.degreeType = ['Bachelor', 'Master', 'PhD', 'Postdoctoral researchers', 'Faculty' 'None']
+        self.scholarshipStatus = ['Open', 'Closed', 'None']
+        self.programLevel = ['Bachelor', 'Master', 'PhD', 'Postdoctoral researchers', 'Faculty' 'None']
+        self.requiredLevel = ['High School Diploma','Bachelor', 'Master', 'PhD', 'Postdoctoral researchers', 'Faculty' 'None']
         self.fieldStudy = detailed_fields
         self.filter_parameters = [
-            'Filter: {{Deadline: {}, Desired Country: {}, Country Origin: {}, Achieved Degree: {},  Desired Degree: {}, Field of Study: {}, Type: {}}}'
+            'Filter: {{Deadline: {}, Desired Country: {}, Country Origin: {}, Achieved Degree: {},  Desired Degree: {}, Field of Study: {}, Type: {}, Status:{}}}'
         ]
 
     def _generate_synthetic_data(self):
@@ -142,13 +144,14 @@ class ClickEventGenerator:
         deadline = random.choice(self.deadline)
         desiredCountry = random.choice([scholarship_data['Country'], 'None'])
         countryOrigin = random.choice([scholarship_data['Country Origin'], 'None'])
-        achievedDegree = random.choice(self.degreeType)
-        desiredDegree = random.choice(self.degreeType)
+        achievedDegree = random.choice(self.requiredLevel)
+        desiredDegree = random.choice(self.programLevel)
         field = random.choice(self.fieldStudy)
         scholarship_type = random.choice(self.scholarshipType)
+        scholarship_status = random.choice(self.scholarshipStatus)
         
         clicked_parameter = self.filter_parameters[0].format(
-            deadline, desiredCountry, countryOrigin, achievedDegree, desiredDegree, field, scholarship_type
+            deadline, desiredCountry, countryOrigin, achievedDegree, desiredDegree, field, scholarship_type, scholarship_status
         )
         event.update({
             "Clicked_Element": 'Filter dropdown',
