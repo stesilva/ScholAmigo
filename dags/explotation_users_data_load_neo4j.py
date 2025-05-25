@@ -5,131 +5,184 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
 #Functions to create nodes and edges for each CSV file containing the generated and fetched data
-#Created according to desing version 1 (assets/graphDesignVersion1.png)
+#Created according to desing (assets/USERS_GRAPH_DESIGN.png)
 
-def load_node_paper(session):
+def create_constrainsts(session):
+    session.run("""CREATE CONSTRAINT unique_person_email IF NOT EXISTS
+                    FOR (p:Person)
+                    REQUIRE p.email IS UNIQUE""") #unique email within any user
+
+    session.run("""CREATE CONSTRAINT unique_scholarship_name IF NOT EXISTS
+        FOR (s:Scholarship)
+        REQUIRE s.scholarship_name IS UNIQUE""") #unique scholarships
+    
+    session.run("""CREATE CONSTRAINT unique_country_name IF NOT EXISTS
+        FOR (c:Country)
+        REQUIRE c.country_name IS UNIQUE""") #unique countries
+   
+    session.run("""CREATE CONSTRAINT unique_language_name IF NOT EXISTS
+        FOR (l:Language)
+        REQUIRE l.language_name IS UNIQUE""") #unique language
+    
+    session.run("""CREATE CONSTRAINT unique_skill_name IF NOT EXISTS
+        FOR (s:Skill)
+        REQUIRE s.skill_name IS UNIQUE""") #unique skill name
+    
+    session.run("""CREATE CONSTRAINT unique_program_name IF NOT EXISTS
+        FOR (dp:DegreeProgram)
+        REQUIRE dp.program_name IS UNIQUE""") #unique program name (education)
+    
+    session.run("""CREATE CONSTRAINT unique_certification_name IF NOT EXISTS
+        FOR (c:Certification)
+        REQUIRE c.certification_name IS UNIQUE""") #unique certification name    
+    
+    session.run("""CREATE CONSTRAINT unique_honor_name IF NOT EXISTS
+        FOR (h:Honor)
+        REQUIRE h.honor_name IS UNIQUE""") #unique honor name     
+    
+    session.run("""CREATE CONSTRAINT unique_company_name IF NOT EXISTS
+        FOR (c:Company)
+        REQUIRE c.company_name IS UNIQUE""") #unique company name      
+    
+#basic user information
+def load_user(session):
     session.run(
-        """LOAD CSV WITH HEADERS FROM "file:///papers.csv" AS row
-            CREATE (paper:Paper {
-            paperDOI: trim(row.doi), 
-            title: trim(row.title), 
-            abstract: trim(row.abstract), 
-            citationCount: toInteger(row.citationCount)})"""
-    )     
-    print('Created node for paper.')
-
-def load_node_author(session):
+        """LOAD CSV WITH HEADERS FROM "file:///user_basic_information.csv" AS row
+        FIELDTERMINATOR ';'
+        MERGE (person:Person {email: trim(row.Email)})
+        SET person.name = trim(row.Name),
+            person.age = toInteger(row.Age),
+            person.gender = trim(row.Gender),
+            person.plan = trim(row.Plan)"""
+    )
+    
+        
     session.run(
-        """LOAD CSV WITH HEADERS FROM "file:///authors.csv" AS row
-            CREATE (author:Author {
-            authorID: trim(row.authorID), 
-            name: trim(row.name)})"""
-    )     
-    print('Created node for author.')
+        """LOAD CSV WITH HEADERS FROM "file:///user_basic_information.csv" AS row
+        FIELDTERMINATOR ';'
+        WITH row
+        MERGE (person:Person {email: trim(row.Email)})
+        MERGE (country:Country {country_name: trim(row.Country)})
+        MERGE (person)-[rel:LIVES_IN]->(country)"""
+    )
 
-def load_node_journal(session):
+#basic alumni information
+def load_alumni(session):
     session.run(
-        """LOAD CSV WITH HEADERS FROM "file:///journals.csv" AS row
-            CREATE (journal:Journal {
-            journalID: trim(row.journalID), 
-            name: trim(row.name)})"""
-    )      
-    print('Created node for journal.')
-
-def load_node_conference_workshop(session):
+        """LOAD CSV WITH HEADERS FROM "file:///alumni_basic_information.csv" AS row
+        FIELDTERMINATOR ';'
+        WITH row
+        MERGE (person:Person {email: trim(row.Email)})
+        SET person.name = trim(row.Name),
+            person.age = toInteger(row.Age),
+            person.gender = trim(row.Gender),
+            person.status = trim(row.Status)
+        MERGE (scholarship:Scholarship {scholarship_name: trim(row.Associeted_Scholarship)})
+        MERGE (person)-[rel:HAS_SCHOLARSHIP]->(scholarship)
+        SET rel.year_recipient = toInteger(row.Year_Scholarship)"""
+    )
+    
     session.run(
-        """LOAD CSV WITH HEADERS FROM "file:///conferences.csv" AS row
-            CREATE (conferenceworkshop:ConferenceWorkshop {
-            conferenceWorkshopID: trim(row.conferenceID), 
-            name: trim(row.name),
-            type: trim(row.type)})"""
-    )      
-    print('Created node for conference/workshop.')
-
-def load_node_keyword(session):
+        """LOAD CSV WITH HEADERS FROM "file:///alumni_basic_information.csv" AS row
+        FIELDTERMINATOR ';'
+        WITH row
+        MERGE (person:Person {email: trim(row.Email)})
+        MERGE (country:Country {country_name: trim(row.Country)})
+        MERGE (person)-[rel:LIVES_IN]->(country)"""
+    )
+    
+#languages
+def load_languages(session):
     session.run(
-        """LOAD CSV WITH HEADERS FROM "file:///keywords.csv" AS row
-            CREATE (keyword:Keyword {
-            keyword: trim(row.keyword)})"""
-    )      
-    print('Created node for keyword.')
+        """LOAD CSV WITH HEADERS FROM "file:///languages.csv" AS row
+        FIELDTERMINATOR ';'
+        WITH row
+        MERGE (person:Person {email: trim(row.email)})
+        MERGE (language:Language {language_name: trim(row.language)})
+        MERGE (person)-[rel:SPEAKS]->(language)
+        SET rel.level = trim(row.level)"""
+    )
 
-
-def load_edge_paper_authored_author(session):
+#skills
+def load_skills(session):
     session.run(
-        """LOAD CSV WITH HEADERS FROM 'file:///author_paper_relations.csv' AS row
-            MATCH (paper:Paper {paperDOI: row.paperDOI})
-            MATCH (author:Author {authorID: row.authorID})
-            MERGE (paper)-[a:AUTHORED_BY {corresponding_author: row.correspondingAuthor}]->(author)"""
-    )      
-    print('Created edge for the relationship AUTHORED_BY')
-
-def load_edge_paper_reviewed_author(session):
+        """LOAD CSV WITH HEADERS FROM "file:///skills.csv" AS row
+        FIELDTERMINATOR ';'
+        WITH row
+        MERGE (person:Person {email: trim(row.email)})
+        MERGE (skill:Skill {skill_name: trim(row.skill)})
+        MERGE (person)-[rel:HAS_SKILL]->(skill)"""
+    )
+    
+#education
+def load_education(session):
     session.run(
-        """LOAD CSV WITH HEADERS FROM 'file:///reviewer_paper_relations.csv' AS row
-            MATCH (paper:Paper {paperDOI: row.paperDOI})
-            MATCH (author:Author {authorID: row.authorID})
-            MERGE (paper)-[a:REVIEWED_BY]->(author)"""
-    )      
-    print('Created edge for the relationship REVIEWED_BY')
+        """LOAD CSV WITH HEADERS FROM "file:///education.csv" AS row
+        FIELDTERMINATOR ';'
+        WITH row
+        MERGE (person:Person {email: trim(row.email)})
+        MERGE (education:DegreeProgram {program_name: trim(row.program_name)})
+        MERGE (person)-[rel:HAS_DEGREE]->(education)
+        SET rel.degree = trim(row.degree),
+            rel.institution = trim(row.institution),
+            rel.graduation_year = toInteger(row.graduation_year)"""
+    )
 
-def load_edge_paper_has_keyword(session):
+#certificates
+def load_certifications(session):
     session.run(
-        """LOAD CSV WITH HEADERS FROM 'file:///keyword_paper_relations.csv' AS row
-            MATCH (paper:Paper {paperDOI: row.paperDOI})
-            MATCH (keyword:Keyword {keyword: row.keyword})
-            MERGE (paper)-[hk:HAS_KEYWORD]->(keyword)"""
-    )      
-    print('Created edge for the relationship HAS_KEYWORD')
-
-def load_edge_paper_cites_paper(session):
+        """LOAD CSV WITH HEADERS FROM "file:///certificates.csv" AS row
+        FIELDTERMINATOR ';'
+        WITH row
+        MERGE (person:Person {email: trim(row.email)})
+        MERGE (certification:Certification {certification_name: trim(row.certification_name)})
+        MERGE (person)-[rel:HAS_CERTIFICATION]->(certification)
+        SET rel.associated_with = trim(row.associated_with),
+            rel.date = toInteger(row.date)"""
+    )
+    
+#honors
+def load_honors(session):
     session.run(
-        """LOAD CSV WITH HEADERS FROM 'file:///citations.csv' AS row
-            MATCH (paper:Paper {paperDOI: row.paperDOI})
-            MATCH (citedPaper:Paper {paperDOI: row.citedPaperDOI})
-            MERGE (paper)-[c:CITES]->(citedPaper)"""
-    )      
-    print('Created edge for the relationship CITES')
+        """LOAD CSV WITH HEADERS FROM "file:///honors.csv" AS row
+        FIELDTERMINATOR ';'
+        WITH row
+        MERGE (person:Person {email: trim(row.email)})
+        MERGE (honor:Honor {honor_name: trim(row.honor_name)})
+        MERGE (person)-[rel:HAS_HONOR]->(honor)"""
+    )
 
-def load_edge_paper_presentedin_conference_workshop(session):
+
+#experiences
+def load_experiences(session):
     session.run(
-        """LOAD CSV WITH HEADERS FROM 'file:///conference_paper_relations.csv' AS row
-            MATCH (paper:Paper {paperDOI: row.paperDOI})
-            MATCH (conferenceWorkshop:ConferenceWorkshop {conferenceWorkshopID: row.conferenceID})
-            MERGE (paper)-[a:PRESENTED_IN {edition: toInteger(row.edition), year: toInteger(row.year), city: row.city}]->(conferenceWorkshop)"""
-    )      
-    print('Created edge for the relationship PRESENTED_IN')
+        """LOAD CSV WITH HEADERS FROM "file:///experiences.csv" AS row
+        FIELDTERMINATOR ';'
+        WITH row
+        MERGE (person:Person {email: trim(row.email)})
+        MERGE (company:Company {company_name: trim(row.company_name)})
+        MERGE (person)-[rel:WORKED_AT]->(company)
+        SET rel.role = trim(row.role),
+            rel.duration = toInteger(row.duration)"""
+    )
 
-def load_edge_paper_publishedin_journal(session):
-    session.run(
-        """LOAD CSV WITH HEADERS FROM 'file:///journal_paper_relations.csv' AS row
-            MATCH (paper:Paper {paperDOI: row.paperDOI})
-            MATCH (journal:Journal {journalID: row.journalID})
-            MATCH (journal:Journal {journalID: row.journalID})
-            MERGE (paper)-[a:PUBLISHED_IN {year: toInteger(row.year), volume: toInteger(row.volume)}]->(journal)"""
-    )      
-    print('Created edge for the relationship PUBLISHED_IN')
-
-def connect_load_neo4j(uri,user,password):
-    connector = ConnectorNeo4j(uri, user, password)
+def connect_load_neo4j(uri,user,password, db_name):
+    connector = ConnectorNeo4j(uri, user, password, db_name)
     connector.connect()
     session = connector.create_session()
     connector.clear_session(session)
 
     logger.info("Creating and loading nodes and edges ...")
 
-    session.execute_write(load_node_paper)
-    session.execute_write(load_node_author)
-    session.execute_write(load_node_journal)
-    session.execute_write(load_node_conference_workshop)
-    session.execute_write(load_node_keyword)
-
-    session.execute_write(load_edge_paper_authored_author)
-    session.execute_write(load_edge_paper_reviewed_author)
-    session.execute_write(load_edge_paper_cites_paper)
-    session.execute_write(load_edge_paper_has_keyword)
-    session.execute_write(load_edge_paper_presentedin_conference_workshop)
-    session.execute_write(load_edge_paper_publishedin_journal)
+    session.execute_write(create_constrainsts)
+    session.execute_write(load_user)
+    session.execute_write(load_alumni)
+    session.execute_write(load_languages)
+    session.execute_write(load_skills)
+    session.execute_write(load_education)
+    session.execute_write(load_certifications)
+    session.execute_write(load_honors)
+    session.execute_write(load_experiences)
 
     print('Creation and loading completed with successes.')
 
