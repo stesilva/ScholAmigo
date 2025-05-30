@@ -319,18 +319,18 @@ def create_users_exploitation_zone():
         user_input_folder_name = 'user_profile/'
         alumni_input_folder_name = 'alumni_profile/'
                 
-        #basic_user_data = retrive_data(s3, users_input_bucket_name, user_input_folder_name)
-        basic_user_data = retrive_data_locally('outputs/users/user_basic_profiles.json')        
+        basic_user_data = retrive_data(s3, users_input_bucket_name, user_input_folder_name)
+        #basic_user_data = retrive_data_locally('outputs/users/user_basic_profiles.json')        
         if basic_user_data is None:
             raise ValueError("No valid basic user data retrieved.")
 
-        #basic_alumni_data = retrive_data(s3, users_input_bucket_name, alumni_input_folder_name)
-        basic_alumni_data = retrive_data_locally('outputs/users/alumni_basic_profiles.json')
+        basic_alumni_data = retrive_data(s3, users_input_bucket_name, alumni_input_folder_name)
+        #basic_alumni_data = retrive_data_locally('outputs/users/alumni_basic_profiles.json')
         if basic_alumni_data is None:
             raise ValueError("No valid basic alumni data retrieved.")  
 
-        #linkedin_user_data = retrive_data(s3, linkedin_input_bucket_name, linkedin_input_folder_name)
-        linkedin_user_data = retrive_data_locally('outputs/linkedin/2025-05-11_16-14_linkedin_profile_data.json')
+        linkedin_user_data = retrive_data(s3, linkedin_input_bucket_name, linkedin_input_folder_name)
+        #linkedin_user_data = retrive_data_locally('outputs/linkedin/2025-05-11_16-14_linkedin_profile_data.json')
         if linkedin_user_data is None:
             raise ValueError("No valid LinkedIn user data retrieved.")
         
@@ -341,7 +341,6 @@ def create_users_exploitation_zone():
         linkedin_user_data_extract_transform(linkedin_user_data,import_path)
         load_data.connect_load_neo4j(uri, user, password, db_name)
 
-      
     except Exception as e:
         logging.error(f"Unexpected error: {e}")
 
