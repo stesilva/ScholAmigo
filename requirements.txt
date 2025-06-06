@@ -8,9 +8,16 @@ selenium
 faker
 requests==2.32.3
 beautifulsoup4==4.13.3
-pandas==2.2.3
+pandas
 pytz
 httpcore
 dotenv
 gevent
 discord_webhook
+pyarrow>=14.0.1
+pinecone>=3.0.0
+sentence-transformers>=2.2.2
+numpy>=1.24.3
+redis>=5.0.1
+psycopg2-binary
+fastparquet

@@ -37,4 +37,13 @@ CREATE TABLE IF NOT EXISTS faq_table (
     clicked_parameter TEXT,
     duration FLOAT,
     location TEXT
-)
+);
+CREATE TABLE IF NOT EXISTS recommendations_table (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(255),
+    source_scholarship_id VARCHAR(255),
+    recommended_scholarship_id VARCHAR(255),
+    similarity_score FLOAT,
+    timestamp TIMESTAMP,
+    clicked BOOLEAN DEFAULT FALSE
+);
