@@ -1,0 +1,15 @@
+FROM python:3.9.21
+
+RUN pip install fastapi uvicorn pydantic \
+    python-dateutil psycopg2 \
+    redis \
+    psycopg2-binary
+
+WORKDIR /app
+COPY api.py .
+
+# Expose the port that uvicorn will run on
+EXPOSE 8000
+
+# Run the FastAPI server
+CMD ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000"] 

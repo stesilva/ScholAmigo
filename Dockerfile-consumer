@@ -1,8 +1,19 @@
 FROM python:3.9.21
 
-RUN pip install python-dateutil psycopg2 kafka-python-ng
+RUN pip uninstall -y pinecone-client && \
+    pip install python-dateutil psycopg2 kafka-python-ng \
+    pandas \
+    pinecone \
+    sentence-transformers \
+    numpy \
+    redis \
+    pyarrow \
+    fastparquet
 
 WORKDIR /app
 COPY kafka_consumer.py .
+COPY recommendation_system.py .
+COPY sql /app/sql
 
-ENTRYPOINT [ "python", "kafka_consumer.py" ]
+# Only run the consumer
+CMD ["python", "kafka_consumer.py"]

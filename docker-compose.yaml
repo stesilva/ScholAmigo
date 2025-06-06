@@ -64,13 +64,15 @@ x-airflow-common: &airflow-common
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AWS_CONFIG_FILE: /home/airflow/.aws/config
     AWS_SHARED_CREDENTIALS_FILE: /home/airflow/.aws/credentials
-    DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-default_value} 
+    DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-default_value}
+    SCHOLARSHIP_DATA_PATH: /tmp/scholarship_data/scholarship/scholarships_processed_new.parquet
 
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-    - ./aws:/home/airflow/.aws:ro
+    - ./aws:/home/airflow/.aws:ro-
+    - ./outputs:/tmp/scholarship_data
 
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on: &airflow-common-depends-on
@@ -80,6 +82,22 @@ x-airflow-common: &airflow-common
     - kafka_network
 
 services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kafka_network
+
   postgres:
     image: postgres:13
     ports:
@@ -117,7 +135,7 @@ services:
         condition: service_completed_successfully
     networks:
       - kafka_network
-
+    
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
@@ -134,7 +152,7 @@ services:
         condition: service_completed_successfully
     networks:
       - kafka_network
-
+    
   airflow-init:
     <<: *airflow-common
     entrypoint: /bin/bash
@@ -283,6 +301,8 @@ services:
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "broker:29092"
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+      SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      SCHEMA_REGISTRY_DEBUG: "true"
     networks:
       - kafka_network
     healthcheck:
@@ -347,14 +367,45 @@ services:
         condition: service_healthy
       postgres_kafka_consumer:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - kafka_network
     volumes:
       - ./sql:/app/sql
+      - ./outputs:/tmp/scholarship_data
+    environment:
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - PINECONE_HOST=https://scholarship-embeddings-18le97h.svc.aped-4627-b74a.pinecone.io
+      - SCHOLARSHIP_DATA_PATH=/tmp/scholarship_data/scholarship/scholarships_processed_new.parquet
+    
     restart: always
-
+    
+  # New API service
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile-api
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+      - postgres_kafka_consumer
+    environment:
+      - PYTHONUNBUFFERED=1
 volumes:
   postgres-db-volume:
+  redis_data:
+  scholarship_data:
+  postgres_data:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_plugins:
+  neo4j_import:
+  airflow_logs:
+  airflow_plugins:
+  airflow_config:
+  airflow_dags:
 
 networks:
   kafka_network:

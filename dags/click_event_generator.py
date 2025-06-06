@@ -1,10 +1,15 @@
 import random
 from datetime import datetime, timedelta
 from faker import Faker
+import pandas as pd
+from typing import Dict, Any, List, Optional
+import os
 
 
 fake = Faker()
 
+# Use /tmp directory for testing
+DEFAULT_DATA_DIR = '/tmp/scholarship_data/scholarship'
 
 detailed_fields = [
     "Basic programmes and qualifications",
@@ -92,26 +97,117 @@ detailed_fields = [
 
 #generates synthetic clickstream events for various actions types on the website
 class ClickEventGenerator:
-    def __init__(self):
+    def __init__(self, scholarship_data_path=None):
         self.user_ids = [f"{random.randint(100000000, 999999999)}" for _ in range(10)]
         self.pages = ['/scholarships', '/details', '/faq']
-        self.deadline = ['Spring', 'Fall', 'None']
-        self.scholarshipType = ['Fully Funded', 'Partially Funded', 'None']
-        self.scholarshipStatus = ['Open', 'Closed', 'None']
-        self.programLevel = ['Bachelor', 'Master', 'PhD', 'Postdoctoral researchers', 'Faculty' 'None']
-        self.requiredLevel = ['High School Diploma','Bachelor', 'Master', 'PhD', 'Postdoctoral researchers', 'Faculty' 'None']
-        self.fieldStudy = detailed_fields
+        self.intake = ['spring', 'fall', 'none']
+        self.scholarshipType = ['fully funded', 'partially funded', 'none']
+        self.scholarshipStatus = ['open', 'closed', 'none']
+        self.programLevel = ['bachelor', 'master', 'phd', 'postdoctoral researchers', 'faculty', 'none']
+        self.requiredLevel = ['high school diploma', 'bachelor', 'master', 'phd', 'postdoctoral researchers', 'faculty', 'none']
+        self.fieldStudy = [field.lower() for field in detailed_fields]
         self.filter_parameters = [
-            'Filter: {{Deadline: {}, Desired Country: {}, Country Origin: {}, Achieved Degree: {},  Desired Degree: {}, Field of Study: {}, Type: {}, Status:{}}}'
+            'Filter: {{Intake: {}, Desired Country: {}, Country Origin: {}, Achieved Degree: {},  Desired Degree: {}, Field of Study: {}, Type: {}, Status:{}}}'
         ]
+        
+        # For testing, just use /tmp directory which should be writable
+        self.data_path = scholarship_data_path or \
+                        os.getenv('SCHOLARSHIP_DATA_PATH') or \
+                        os.path.join(DEFAULT_DATA_DIR, 'scholarships_processed_new.parquet')
+        
+        # For testing purposes, if no data file exists, we'll just use synthetic data
+        if not os.path.exists(self.data_path):
+            print(f"No data file found at {self.data_path}, using synthetic data generation")
+            self.scholarship_data = []
+        else:
+            # Load scholarship data
+            self.scholarship_data = self._load_scholarship_data(self.data_path)
 
-    def _generate_synthetic_data(self):
-        return {
-            'Search Input': fake.domain_word() + " scholarship",
-            'Scholarship ID': fake.uuid4()[:8].upper(),
-            'Country': fake.country(),
-            'Country Origin': fake.country()
-        }
+    def _load_scholarship_data(self, data_path: str) -> List[Dict[str, Any]]:
+        """Load scholarship data from parquet file"""
+        try:
+            if not os.path.exists(data_path):
+                raise FileNotFoundError(f"Data file not found at {data_path}")
+            
+            print(f"Loading scholarship data from: {data_path}")
+            # Read the parquet file using pandas
+            df = pd.read_parquet(data_path)
+            
+            # Convert DataFrame to list of dictionaries
+            scholarships = df[[
+                'scholarship_id',
+                'scholarship_name',
+                'program_country',
+                'origin_country',
+                'program_level',
+                'required_level',
+                'fields_of_study_code',
+                'funding_category',
+                'status',
+                'intake'
+            ]].to_dict('records')
+            
+            print(f"Successfully loaded {len(scholarships)} scholarships")
+            
+            # Convert to our format
+            return [
+                {
+                    'Scholarship ID': row['scholarship_id'],
+                    'Scholarship Name': row['scholarship_name'],
+                    'Country': row['program_country'],
+                    'Country Origin': row['origin_country'],
+                    'Program Level': row['program_level'],
+                    'Required Level': row['required_level'],
+                    'Field of Study': row['fields_of_study_code'],
+                    'Type': row['funding_category'],
+                    'Status': row['status'],
+                    'Intake': row['intake']
+                }
+                for row in scholarships
+            ]
+        except Exception as e:
+            print(f"Warning: Could not load scholarship data: {str(e)}")
+            print("Falling back to synthetic data generation")
+            return []
+
+    def _get_single_value(self, field_value: Any) -> str:
+        """Extract a single value from a field that might be a list or numpy array"""
+        if field_value is None:
+            return 'none'
+            
+        # Handle numpy arrays or pandas series
+        if hasattr(field_value, 'tolist'):
+            field_value = field_value.tolist()
+            
+        # Handle lists
+        if isinstance(field_value, list):
+            if not field_value:  # Empty list
+                return 'none'
+            return str(random.choice(field_value)).lower()
+            
+        # Handle everything else
+        return str(field_value).lower()
+
+    def _generate_synthetic_data(self) -> Dict[str, Any]:
+        """Generate data using real scholarship data if available, otherwise synthetic"""
+        if self.scholarship_data:
+            # Use real scholarship data
+            scholarship = random.choice(self.scholarship_data)
+            return scholarship
+        else:
+            # Fallback to synthetic data
+            return {
+                'Scholarship ID': fake.uuid4()[:8].upper(),
+                'Scholarship Name': fake.company() + " Scholarship",
+                'Country': fake.country(),
+                'Country Origin': [fake.country()],
+                'Program Level': random.choice(self.programLevel),
+                'Required Level': random.choice(self.requiredLevel),
+                'Field of Study': [random.choice(self.fieldStudy)],
+                'Type': random.choice(self.scholarshipType),
+                'Status': random.choice(self.scholarshipStatus),
+                'Intake': random.choice(self.intake)
+            }
 
     def _generate_base_event(self, page):
         user_id = random.choice(self.user_ids)
@@ -132,26 +228,42 @@ class ClickEventGenerator:
     def generate_search_event(self):
         event = self._generate_base_event('/scholarships')
         scholarship_data = self._generate_synthetic_data()
+        
+        # Get possible search terms and ensure they're properly handled
+        possible_terms = [
+            scholarship_data.get('Scholarship Name', ''),
+            self._get_single_value(scholarship_data.get('Field of Study')),
+            self._get_single_value(scholarship_data.get('Country')),
+            self._get_single_value(scholarship_data.get('Country Origin'))
+        ]
+        
+        # Filter out empty or None values and select a random term
+        valid_terms = [term for term in possible_terms if term and term.lower() != 'none']
+        search_term = random.choice(valid_terms) if valid_terms else 'scholarship'
+        
         event.update({
             "Clicked_Element": 'Search button',
-            "Clicked_Parameter": f'Search Input: {scholarship_data["Search Input"]}'
+            "Clicked_Parameter": f'Search Input: {search_term}'
         })
         return event
 
     def generate_filter_event(self):
         event = self._generate_base_event('/scholarships')
         scholarship_data = self._generate_synthetic_data()
-        deadline = random.choice(self.deadline)
-        desiredCountry = random.choice([scholarship_data['Country'], 'None'])
-        countryOrigin = random.choice([scholarship_data['Country Origin'], 'None'])
-        achievedDegree = random.choice(self.requiredLevel)
-        desiredDegree = random.choice(self.programLevel)
-        field = random.choice(self.fieldStudy)
-        scholarship_type = random.choice(self.scholarshipType)
-        scholarship_status = random.choice(self.scholarshipStatus)
+        
+        # Get single values for list fields or use existing single values
+        intake = self._get_single_value(scholarship_data.get('Intake'))
+        desiredCountry = self._get_single_value(scholarship_data.get('Country'))
+        countryOrigin = self._get_single_value(scholarship_data.get('Country Origin'))
+        achievedDegree = self._get_single_value(scholarship_data.get('Required Level'))
+        desiredDegree = self._get_single_value(scholarship_data.get('Program Level'))
+        field = self._get_single_value(scholarship_data.get('Field of Study'))
+        scholarship_type = self._get_single_value(scholarship_data.get('Type'))
+        scholarship_status = self._get_single_value(scholarship_data.get('Status'))
         
         clicked_parameter = self.filter_parameters[0].format(
-            deadline, desiredCountry, countryOrigin, achievedDegree, desiredDegree, field, scholarship_type, scholarship_status
+            intake, desiredCountry, countryOrigin, achievedDegree, 
+            desiredDegree, field, scholarship_type, scholarship_status
         )
         event.update({
             "Clicked_Element": 'Filter dropdown',
