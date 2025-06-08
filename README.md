@@ -111,7 +111,7 @@ To visually see messages produced by Kafka producers, open [http://localhost:902
 
 #### **Step 6: Access Neo4j Graph**
 
-To visualize the graph that is loaded after triggering the DAG 'load_neo4j, open [http://localhost:7474](http://localhost:7474).
+To visualize the graph that is loaded after triggering the DAG 'load_neo4j_data', open [http://localhost:7474](http://localhost:7474).
 
 ---
 
