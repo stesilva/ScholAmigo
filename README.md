@@ -109,6 +109,10 @@ docker-compose up
 
 To visually see messages produced by Kafka producers, open [http://localhost:9021](http://localhost:9021).
 
+#### **Step 6: Access Neo4j Graph**
+
+To visualize the graph that is loaded after triggering the DAG 'load_neo4j, open [http://localhost:7474](http://localhost:7474).
+
 ---
 
 ### **Additional Notes**
@@ -117,7 +121,6 @@ To visually see messages produced by Kafka producers, open [http://localhost:902
   To replicate, you will need Spark and Hadoop jars installed locally.
 - Airflow did not work with Spark in this setup. As a workaround, for Mac users, you can schedule the example script for the DAAD trusted zone (under the `scripts` folder) using a cron job. This demonstrates that scheduling is possible even without Airflow.
 - Define API keys for AWS, Pinecone, and Gemini in the appropriate configuration files or environment variables.
-- Ensure you have an existing and running Neo4j database and enter the corresponding authentication information in the environment variables, as well as the import file directory path for CSV files.
 
 ---
 
@@ -134,8 +137,10 @@ In the folder 'outputs', we present the generated files from running the pipelin
 
 ### **Exploitation Zone Applications**
 
-To execute some of the exploitation zone applications, you can run the files `user_alumni_recommendation` or `user_analytics` as examples. These scripts demonstrate how to use the processed data for recommendations and analytics.
+To execute some of the exploitation zone applications, you can:
 
+1. Run the files `user_alumni_recommendation` or `user_analytics` as examples. These scripts demonstrate how to use the processed data for recommendations and analytics.
+2. Trigger 'stream' DAG to produce Kafka messages, and observe Kafka consumer's ouputs on the Terminal, where you can see messages with scholarship recommendations whenever consumer receives 'Save' button clicks.
 ---
 
 ### Final Notes
