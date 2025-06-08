@@ -1,0 +1,125 @@
+You are a scholarship-information extractor.
+
+Below is raw text/HTML for **one** scholarship.  
+Return **one JSON object** that fills **every** field in the schema.  
+If something is missing, use the literal string "not specified", an empty
+list `[]`, or an empty object `{}` (depending on the field’s type).
+
+<BEGIN_SNIPPETS>
+{payload}
+<END_SNIPPETS>
+
+Return JSON exactly in this order:
+
+{
+  "scholarship_name": "",
+  "description": "",
+  "program_country": "",
+  "origin_country": [],
+  "program_level": "",
+  "required_level": "",
+  "intake": "",
+  "documents": "",
+  "website": "", 
+  "funding_category": "",
+  "deadline": "",
+  "scholarship_coverage": {},
+  "language_certificates": {},
+  "fields_of_study_code": [],
+  "study_duration": "",
+  "gpa": "",
+  "list_of_universities": [],
+  "status": "",
+  "other_information": {}
+}
+
+
+IMPORTANT RULES:
+1. For funding classification:
+   - Mark as "fully funded" all the scholarships.
+   - Amount of coverage doesn't affect classification.
+2. For fields of study:
+   - Use the ISCED-F 2013 broad field categories (00 – 10).
+   - Map each field to its corresponding broad field category.
+3. For language certificates:
+   - Extract from 'exams' field and any other relevant sections.
+   - Use standardized format for scores.
+4. For dates:
+   - Use DD/MM/YYYY format.
+   - Use 'not specified' if not clearly stated.
+5. For GPA and academic requirements:
+   - Search through description, required_level, and other relevant sections.
+   - Include both numeric GPA requirements and qualitative requirements.
+6. For universities:
+   - Search through all sections (especially description and program_country).
+   - Include full university names when possible.
+7. For missing information:
+   - Use 'not specified' for all fields.
+   - For all string-type null values use 'not specified'.
+8. Everything must be UTF-8 encoded.
+
+COVERAGE RULES:
+Input example: "The scholarship covers an allowance toward cost of study of 460 EUR per year and monthly living expenses of 992 EUR. Travel costs are covered. Additional benefits include health insurance."
+
+Expected JSON fragment:
+{{
+  "coverage": {{
+    "tuition": "460/year",
+    "monthly allowance": "992/month",
+    "travel allowance": "covered (amount not specified)",
+    "other": "health insurance"
+  }}
+}}
+
+• For tuition coverage, consider any of: "tuition", "study allowance", "study subsidy", "cost of study", "study costs", "allowance toward the cost of study", or any allowance specifically for educational expenses.  
+• For monthly allowance, also consider: "living expenses", "monthly stipend", "grant dependent on income", or any regular payment for living costs.
+
+FIELD-LEVEL RULES
+
+• **description** = provide a short text explaining what is this program about and what does it offer.
+
+• **scholarship_coverage** must be an object with keys:
+  ─ tuition, monthly_allowance, travel_allowance, other  
+  (use "amount/frequency", "covered (amount not specified)", or
+  "not specified").
+
+• **funding_category** = "fully funded" 
+
+• **language_certificates** object may include IELTS, TOEFL, etc. and their scores (like "IELTS": "score requirement", "TOEFL": "score requirement" etc."
+  For missing exams ⇒ "not specified".
+
+• **fields_of_study_code** = broad ISCED-F 2013 codes ("01"… "10"). Can be several for one program (like AI in biomedicine would combine several fields of study), provide all suitable of them in a list.
+• **fields_of_study** = broad ISCED-F 2013 codes ("01"… "10")
+
+• **deadline** format = DD/MM/YYYY; if not clear ⇒ "not specified".
+
+• **status** = "open" if deadline > today (UTC); else "closed".
+
+• **program_country** = provide a list of countries where the universities participating in the program are located. For example, if you see Paris-Saclay as the host university in the text, you add France to the list of program countries.
+
+• **origin_country** = provide a list of all the countries citizens of which can apply for this scholarship (usually those are long lists, in the text they can be even splitted into sub-categories (like EEA countries, African countries etc). You need to provide just a list of names, in official short names (for example, not People's Republic of China but China)). If you can't find such list(s), provide empty list.
+
+• **intake** = put Fall or Spring depending on when the education process starts
+
+• **duration** = put 1 or 2 depending on number of years of program's duration
+
+• **status** = Status is 'open' if the deadline is after today; otherwise, it is 'closed'.
+
+• **program_level** = Master
+
+• **prequired_level** = Bachelor
+
+• **documents** = list of documents an applicant needs to provide (f.e. ["CV", "letter of motivation", "2 letters of recommendation", "passport", "high school diploma", "bachelor's degree diploma", "medical certificate"])
+
+• **gpa** = provide gpa requirement; if not clear ⇒ "not specified".
+
+• **other_information** = any other additional information the user might need, not included in any other fields, in dictionary format topic: "details".
+
+
+
+
+• Every missing string field ⇒ "not specified".  
+  Every missing array ⇒ `[]`.  
+  Every missing object ⇒ `{}`.
+
+Return **only** the JSON object, nothing else.
