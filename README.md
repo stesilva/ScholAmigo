@@ -31,8 +31,8 @@ cd ScholAmigo
 
 ### **Notes for Windows Users**
 
-1. It is possible that `chromium:arm64` and `chromium-driver:arm64` in the Dockerfile will not work for Windows; therefore, so Chrome and Chrome driver will need to be installed manually.
-2. After that, the script for scraping_daad.py needs to be changed with relevant paths:
+1. It is possible that `chromium:arm64` and `chromium-driver:arm64` in the Dockerfile will not work for Windows; therefore, Chrome and Chrome driver will need to be installed manually.
+2. After that, the script for scraping_daad.py needs to be changed with the relevant paths:
 
 ```python
 options.binary_location = r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
@@ -113,11 +113,11 @@ To visually see messages produced by Kafka producers, open [http://localhost:902
 
 ### **Additional Notes**
 
-- Generally, Docker will run similarly, but the Spark transformations will need to be executed **outside the container**.  
+- Spark transformations will need to be executed **outside the container**.  
   To replicate, you will need Spark and Hadoop jars installed locally.
 - Airflow did not work with Spark in this setup. As a workaround, for Mac users, you can schedule the example script for the DAAD trusted zone (under the `scripts` folder) using a cron job. This demonstrates that scheduling is possible even without Airflow.
 - Define API keys for AWS, Pinecone, and Gemini in the appropriate configuration files or environment variables.
-- Make sure you have a existing and running Neo4j database and enter the corresponding authentication information on the enviroment variables, as well as the import file directory path for CSV files.
+- Ensure you have an existing and running Neo4j database and enter the corresponding authentication information in the environment variables, as well as the import file directory path for CSV files.
 
 ---
 
@@ -128,7 +128,7 @@ Ensure sufficient system resources are allocated to Docker (Airflow recommends a
 ---
 
 ### Example Output
-In the folder 'outputs' we present the generated files from running the pipeline. These files show how the data is structured after being extracted from the data sources. Furthermore, these files are also stored in the Amazon S3 buckets created for this project.
+In the folder 'outputs', we present the generated files from running the pipeline. These files demonstrate the structure of the data after it has been extracted from the data sources. Furthermore, these files are also stored in the Amazon S3 buckets created for this project.
 
 ---
 
