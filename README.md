@@ -45,7 +45,7 @@ driver = webdriver.Chrome(executable_path=r"C:\chromedriver\chromedriver.exe", o
 For Linux-based OS run the following command to create directories for Airflow:
 
 ```bash
-mkdir -p ./dags ./logs ./plugins
+mkdir -p ./dags ./logs ./plugins ./aws ./scripts ./sql ./outputs
 echo -e "AIRFLOW_UID=$(id -u)" > .env
 ```
 
@@ -73,9 +73,13 @@ ScholAmigo/
 │   ├── credentials
 ├── scripts/
 │   ├── entrypoint.sh
+│   ├── trusted_zone_daad.py
+│   ├── example_script.py
 ├── sql/
 │   ├── create_queries.sql
 │   ├── insert_queries.sql
+├── outputs/
+│   ├── ...
 ├── kafka_consumer.py
 ├── requirements.txt
 ├── docker-compose.yaml
@@ -107,6 +111,16 @@ To visually see messages produced by Kafka producers, open [http://localhost:902
 
 ---
 
+### **Additional Notes**
+
+- Generally, Docker will run similarly, but the Spark transformations will need to be executed **outside the container**.  
+  To replicate, you will need Spark and Hadoop jars installed locally.
+- Airflow did not work with Spark in this setup. As a workaround, for Mac users, you can schedule the example script for the DAAD trusted zone (under the `scripts` folder) using a cron job. This demonstrates that scheduling is possible even without Airflow.
+- Define API keys for AWS, Pinecone, and Gemini in the appropriate configuration files or environment variables.
+- Make sure you have a existing and running Neo4j database and enter the corresponding authentication information on the enviroment variables, as well as the import file directory path for CSV files.
+
+---
+
 ### **Troubleshooting**
 
 Ensure sufficient system resources are allocated to Docker (Airflow recommends allocating 10GB of RAM for Docker, according to instructions provided in this link: [https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#fetching-docker-compose-yaml](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#fetching-docker-compose-yaml)).
@@ -115,6 +129,12 @@ Ensure sufficient system resources are allocated to Docker (Airflow recommends a
 
 ### Example Output
 In the folder 'outputs' we present the generated files from running the pipeline. These files show how the data is structured after being extracted from the data sources. Furthermore, these files are also stored in the Amazon S3 buckets created for this project.
+
+---
+
+### **Exploitation Zone Applications**
+
+To execute some of the exploitation zone applications, you can run the files `user_alumni_recommendation` or `user_analytics` as examples. These scripts demonstrate how to use the processed data for recommendations and analytics.
 
 ---
 
