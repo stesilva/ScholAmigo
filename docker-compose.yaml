@@ -66,13 +66,24 @@ x-airflow-common: &airflow-common
     AWS_SHARED_CREDENTIALS_FILE: /home/airflow/.aws/credentials
     DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-default_value}
     SCHOLARSHIP_DATA_PATH: /tmp/scholarship_data/scholarship/scholarships_processed_new.parquet
+    # Airflow Variables for Pinecone
+    AIRFLOW_VAR_PINECONE_API_KEY: ${PINECONE_API_KEY:-}
+    AIRFLOW_VAR_PINECONE_HOST: ${PINECONE_HOST:-}
+    AIRFLOW_VAR_PINECONE_USER_HOST: ${PINECONE_USER_HOST:-}
+
+    # Airflow Variables for Neo4j
+    AIRFLOW_VAR_NEO4J_URI: ${NEO4J_URI:-bolt://neo4j:7687}
+    AIRFLOW_VAR_NEO4J_USER: ${NEO4J_USER:-neo4j}
+    AIRFLOW_VAR_NEO4J_PASSWORD: ${NEO4J_PASSWORD:-scholamigo123}
+    AIRFLOW_VAR_NEO4J_DATABASE: ${NEO4J_DATABASE:-neo4j}
 
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
-    - ./aws:/home/airflow/.aws:ro-
+    - ./aws:/home/airflow/.aws:ro
     - ./outputs:/tmp/scholarship_data
+    - ./outputs:/opt/airflow/outputs  # Additional mount for Neo4j compatibility
 
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on: &airflow-common-depends-on
@@ -393,6 +404,33 @@ services:
       - postgres_kafka_consumer
     environment:
       - PYTHONUNBUFFERED=1
+
+  neo4j:
+    image: neo4j:latest
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-scholamigo123}
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'  # Install both APOC and GDS plugins
+      NEO4J_dbms_security_procedures_unrestricted: "gds.*,apoc.*"  # Allow GDS and APOC procedures
+      NEO4J_apoc_export_file_enabled: "true"
+      NEO4J_apoc_import_file_enabled: "true"
+      NEO4J_apoc_import_file_use__neo4j__config: "true"
+      NEO4J_dbms_directories_import: "/var/lib/neo4j/import"
+      NEO4J_dbms_security_allow__csv__import__from__file__urls: "true"
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - ./outputs/neo4j:/var/lib/neo4j/import  # Mount directly to Neo4j's default import directory
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - kafka_network
+
 volumes:
   postgres-db-volume:
   redis_data:
@@ -400,7 +438,6 @@ volumes:
   postgres_data:
   neo4j_data:
   neo4j_logs:
-  neo4j_plugins:
   neo4j_import:
   airflow_logs:
   airflow_plugins:

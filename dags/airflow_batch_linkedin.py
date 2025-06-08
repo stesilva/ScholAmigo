@@ -19,7 +19,6 @@ os.environ['NO_PROXY'] = '*'
 BUCKET_NAME = 'linkedin-data-ingestion'
 INPUT_FOLDER = 'application_data/'
 OUTPUT_FOLDER = 'linkedin_users_data/'
-AWS_CONN_ID = 'aws_default'
 
 def send_alert(message):
     webhook_url = os.getenv('DISCORD_WEBHOOK_URL')
@@ -78,7 +77,7 @@ def linkedin_data_generation_dag():
     def retrieve_linkedin_urls():
         """Task 1: Retrieve LinkedIn URLs from S3"""
         try:
-            session = boto3.Session(profile_name="bdm_group_member")
+            session = boto3.Session(profile_name="bdm-2025")
             s3 = session.client("s3")
             profiles=retrive_linkedin_urls_s3(s3, BUCKET_NAME, INPUT_FOLDER)
             logging.info(f"Retrieved {len(profiles)} profiles from S3")

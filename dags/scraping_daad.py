@@ -22,6 +22,9 @@ driver = webdriver.Chrome(
     options=options
 )
 
+BUCKET_NAME = "scholarship-data-ingestion"
+OUTPUT_FOLDER = "german_scholarships/"
+
 def save_data_to_json(data, filename="/german_scholarships_data.json"):
     """
     Saves scholarship data to a JSON file.
@@ -98,6 +101,42 @@ def extract_result_links():
         result_links.append(result.get_attribute("href"))
     return result_links
 
+def extract_subject_info(entry_element):
+    try:
+        # Find specifically the dd element containing "See list" text
+        subject_dd = WebDriverWait(entry_element, 5).until(
+            EC.presence_of_element_located((By.XPATH, ".//dd[contains(text(), 'See list')]"))
+        )
+        
+        # Now wait for the info icon to be clickable
+        info_icon = WebDriverWait(subject_dd, 5).until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "div.info-icon-wrapper i.info-icon"))
+        )
+        
+        # Scroll the element into middle of the viewport to avoid header overlaps
+        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", info_icon)
+        
+        # Try JavaScript click instead of direct click
+        driver.execute_script("arguments[0].click();", info_icon)
+        
+        # Use WebDriverWait to wait for the tooltip to become visible
+        tooltip = WebDriverWait(driver, 5).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, "div.tool-tip-stipdb[style*='display: block']"))
+        )
+        
+        # Extract all list items from the tooltip
+        disciplines = tooltip.find_elements(By.CSS_SELECTOR, "ul li")
+        
+        if disciplines:
+            result = "Applicable to the following disciplines:\n"
+            result += "\n".join([f"- {discipline.text}" for discipline in disciplines])
+            return result
+        else:
+            return tooltip.text.strip()
+            
+    except Exception as e:
+        print(f"Error extracting subject info: {e}")
+        return "No subject list available"
 def extract_data_from_page():
     """
     Extracts data from each result link
@@ -166,9 +205,9 @@ def scrape_callable():
     # Limited to Graduate programs for demonstration purposes. range(3,4) can be changed to range(1,6) for full scale scraping
     status_range = range(3,4)
     status_mapping = {
-        1: "Undergraduate",
+        1: "Bachelor",
         2: "Postdoctoral researchers",
-        3: "Graduates",
+        3: "Master",
         4: "PhD",
         5: "Faculty"
     }
@@ -202,13 +241,21 @@ def scrape_callable():
 
             links=set()
             count=0
+            subject_lists = {}
             while True:
                 WebDriverWait(driver, 10).until(
                     EC.presence_of_element_located((By.CSS_SELECTOR, "div.stipdb-results"))
                 )
                 count+=extract_results()
-
-                links.update(extract_result_links())
+                entries = driver.find_elements(By.CSS_SELECTOR, "div.stipdb-results ul.resultlist li.entry.clearfix")
+                # links.update(extract_result_links())
+                for entry in entries:
+                    link = entry.find_element(By.CSS_SELECTOR, "h2 a").get_attribute("href")
+                    links.add(link)
+                    result = extract_subject_info(entry)
+                    if result == "No subject list available":
+                        print(f"Warning: No subject list for {link}")
+                    subject_lists[link] = result
                 try:
                     next_button = WebDriverWait(driver, 10).until(
                             EC.presence_of_element_located((By.CSS_SELECTOR, "div.clearfix.pagination-wrapper ul.pagination li:last-child a"))
@@ -250,6 +297,7 @@ def scrape_callable():
                     # Extract data from the result page
                     data = extract_data_from_page()
 
+                    data["Fields of Study"] = subject_lists.get(link, "Unknown")
                     data["Country of Origin"]=origin_mapping.get(origin, "Unknown Origin")
                     data["Status"]=status_mapping.get(status, "Unknown Status")
 
@@ -267,7 +315,7 @@ def scrape_callable():
 
     # Send data to aws bucket
     # save_data_to_json(scholarships_data)
-    send_data_to_aws(scholarships_data, "scholarship-data-bdm", f"{datetime.now().strftime("%Y-%m-%d_%H-%M")}_german_scholarships_data.json")
+    send_data_to_aws(scholarships_data, BUCKET_NAME, OUTPUT_FOLDER + datetime.now().strftime("%Y-%m-%d_%H-%M") + "_german_scholarships_data.json")
 
     # Close the WebDriver
     driver.quit()
