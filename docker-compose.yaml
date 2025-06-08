@@ -350,6 +350,28 @@ services:
       timeout: 10s
       retries: 5
 
+  postgres_scholarships:
+    image: postgres:16
+    container_name: postgres_scholarships
+    restart: always
+    networks:
+      - kafka_network
+    ports:
+      - "5436:5432"
+    environment:
+      POSTGRES_USER:  scholarships
+      POSTGRES_PASSWORD: scholar_pw
+      POSTGRES_DB:  scholarships
+    volumes:
+      - postgres_scholarships:/var/lib/postgresql/data
+      - ./sql/create_scholarship_schema.sql:/docker-entrypoint-initdb.d/create_scholarship_schema.sql:ro
+      - ./sql/insert_countries.sql:/docker-entrypoint-initdb.d/insert_countries.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "scholarships"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+
   postgres_kafka_consumer:
     image: postgres:16
     container_name: postgres_kafka_consumer
@@ -433,6 +455,7 @@ services:
 
 volumes:
   postgres-db-volume:
+  postgres_scholarships:
   redis_data:
   scholarship_data:
   postgres_data:

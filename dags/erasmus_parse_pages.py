@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 
-RELEVANT_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "p"]
+RELEVANT_TAGS = ["h1", "h2", "h3", "h4", "h5", "h6", "p", "li", "div", "ul", "ol"]
 
 #etracts text content from relevant HTML tag
 def parse_page_structured(project: str, main_link: str, subpage_url: str):
