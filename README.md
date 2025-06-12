@@ -143,6 +143,24 @@ To execute some of the exploitation zone applications, you can:
 2. Trigger 'stream' DAG to produce Kafka messages, and observe Kafka consumer's ouputs on the Terminal, where you can see messages with scholarship recommendations whenever consumer receives 'Save' button clicks.
 ---
 
+### Architecture Design
+
+![Architecture Diagram](assets/architecture.png)
+
+The ScholAmigo architecture is designed to efficiently collect, process, and utilize diverse data sources to recommend scholarships to students. 
+
+Data is ingested from scholarship sources and simulated LinkedIn/user activity using web scraping and Python scripts, orchestrated by Airflow. These data streams are sent via Kafka for real-time processing and stored in S3 ingestion buckets (Landing Zone). 
+
+Batch processes using Apache Spark transform and validate data, moving it to trusted S3 buckets (Trusted Zone). Further processing prepares data for the Exploitation Zone, where various systems power the recommendation engine:
+
+- A PostgreSQL database supports real-time queries.
+- Redis enables real-time recommendations by caching recent user clickstream data.
+- Neo4j and Pinecone provide graph-based and embedding-based recommendations for peer and alumni insights.
+
+The architecture supports both real-time and batch processing, ensuring up-to-date and relevant scholarship matches for users.
+
+---
 ### Final Notes
 
 If you encounter any issues, feel free to open an issue on the GitHub repository.
+
