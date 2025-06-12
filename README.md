@@ -145,7 +145,7 @@ To execute some of the exploitation zone applications, you can:
 
 ### Architecture Design
 
-![Architecture Diagram](assets/architecture.png)
+![Architecture Diagram](assets/ScholAmigo - Architecture Design - P2.png)
 
 The ScholAmigo architecture is designed to efficiently collect, process, and utilize diverse data sources to recommend scholarships to students. 
 
